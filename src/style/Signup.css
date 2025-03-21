@@ -1,0 +1,152 @@
+/* Importing font from Google Fonts */
+@import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
+              url('../images/bus-system.jpg') center center no-repeat; /* Center the image */
+  background-size: 110%; /* Increase the size of the background image */
+  background-attachment: fixed; /* Keeps the background fixed during scroll */
+  background-position: center 20%; /* Adjusts the background position down by 20% */
+  color: #ffffff; /* White text for contrast */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* Adds depth to text */
+}
+
+.signup-container {
+  position: relative;
+  max-width: 600px; /* Increased width for more space */
+  width: 100%;
+  background: rgba(255, 255, 255, 0.7); /* Semi-transparent white background */
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Mimics design harmony */
+  text-align: center;
+}
+
+
+h1 {
+  font-size: 40px;
+  font-weight: 700;
+  color: #FFCC00; /* Bus yellow */
+  margin-bottom: 20px;
+}
+
+
+
+/* Heading */
+.signup-container h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.signup-container h2::after {
+  content: '';
+  display: block;
+  width: 50px;
+  height: 4px;
+  background: #FFCC00; /* Bus yellow accent color */
+  margin: 8px auto 20px;
+  border-radius: 8px;
+}
+
+/* Signup Form */
+.signup-form {
+  margin-top: 20px;
+}
+
+/* Row for side-by-side input fields */
+.signup-form .form-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+/* Form Group */
+.signup-form .form-group {
+  flex: 1;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+/* Input Fields */
+.signup-form .form-group input {
+  height: 50px;
+  width: 100%;
+  padding: 0 45px 0 15px; /* Space for icons */
+  font-size: 16px;
+  border: 2px solid #C7BEBE;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+/* Input focus effect */
+.signup-form .form-group input:focus {
+  border-color: #4070f4;
+  box-shadow: 0 0 5px rgba(64, 112, 244, 0.3);
+}
+
+/* Input Icons */
+.signup-form .form-group i {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #777;
+}
+
+/* Button */
+button {
+  width: 100%;
+  margin-top: 15px;
+  color: #ffffff; /* White text for readability */
+  font-size: 18px;
+  font-weight: 600;
+  border: none;
+  background: #104971; /* UWI bus theme blue */
+  padding: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background: #FFCC00; /* Bus yellow accent color */
+}
+
+/* Error Message */
+.error {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+  .signup-container {
+    padding: 30px;
+  }
+
+  .signup-container h2 {
+    font-size: 20px;
+  }
+
+  .signup-form .form-row {
+    flex-direction: column;
+  }
+
+  .signup-form .form-group {
+    margin-bottom: 10px;
+  }
+}
