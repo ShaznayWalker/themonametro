@@ -1,0 +1,213 @@
+/* Importing font from Google Fonts */
+@import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
+              url('../images/bus-system.jpg') center center no-repeat; 
+  background-size: 110%; 
+  background-attachment: fixed; 
+  background-position: center 20%; 
+  color: #ffffff; 
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); 
+}
+
+.signup-container {
+  position: relative;
+  max-width: 600px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.7); 
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); 
+  text-align: center;
+}
+
+h1 {
+  font-size: 40px;
+  font-weight: 700;
+  color: #FFCC00; 
+  margin-bottom: 20px;
+}
+
+.signup-container h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.signup-container h2::after {
+  content: '';
+  display: block;
+  width: 50px;
+  height: 4px;
+  background: #FFCC00; 
+  margin: 8px auto 20px;
+  border-radius: 8px;
+}
+
+.signup-form {
+  margin-top: 20px;
+}
+
+.signup-form .form-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.signup-form .form-group {
+  flex: 1;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.signup-form .form-group input {
+  height: 50px;
+  width: 100%;
+  padding: 0 15px;
+  font-size: 16px;
+  border: 2px solid #C7BEBE;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+/* Role Select Dropdown */
+.signup-form .form-group select {
+  height: 50px;
+  width: 100%;
+  padding: 0 15px;
+  font-size: 16px;
+  border: 2px solid #C7BEBE;
+  border-radius: 8px;
+  background-color: white;
+  color: #333;
+  appearance: none;
+  transition: all 0.3s ease;
+}
+
+.signup-form .form-group select:focus {
+  border-color: #4070f4;
+  box-shadow: 0 0 5px rgba(64, 112, 244, 0.3);
+  outline: none;
+}
+
+.signup-form .form-group label {
+  display: block;
+  text-align: left;
+  margin-bottom: 8px;
+  color: #333;
+  font-weight: 500;
+}
+
+.signup-form .form-group input:focus {
+  border-color: #4070f4;
+  box-shadow: 0 0 5px rgba(64, 112, 244, 0.3);
+}
+
+button {
+  width: 100%;
+  margin-top: 15px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  border: none;
+  background: #104971;
+  padding: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background: #FFCC00;
+}
+
+.error {
+  color: #d9534f;
+  font-size: 14px;
+  margin-top: 10px;
+  background-color: rgba(217, 83, 79, 0.1);
+  padding: 10px;
+  border-radius: 5px;
+  border-left: 4px solid #d9534f;
+}
+
+.success-message {
+  color: #5cb85c;
+  font-size: 14px;
+  margin-top: 10px;
+  background-color: rgba(92, 184, 92, 0.1);
+  padding: 10px;
+  border-radius: 5px;
+  border-left: 4px solid #5cb85c;
+}
+
+.signin-link {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #333;
+}
+
+.signin-link a {
+  color: #104971;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.signin-link a:hover {
+  text-decoration: underline;
+  color: #FFCC00;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+  .signup-container {
+    padding: 30px;
+    margin: 20px;
+  }
+
+  .signup-container h2 {
+    font-size: 20px;
+  }
+
+  .signup-form .form-row {
+    flex-direction: column;
+  }
+
+  .signup-form .form-group {
+    margin-bottom: 10px;
+  }
+
+  body {
+    background-size: cover;
+    background-position: center;
+  }
+}
+
+/* Custom dropdown arrow */
+.form-group.select-wrapper {
+  position: relative;
+}
+
+.form-group.select-wrapper::after {
+  content: "▼";
+  font-size: 12px;
+  color: #777;
+  position: absolute;
+  right: 15px;
+  top: 60%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
