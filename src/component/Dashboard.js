@@ -10,7 +10,8 @@ const Dashboard = () => {
   const [upcomingTrips, setUpcomingTrips] = useState([]);
   const [recentBookings, setRecentBookings] = useState([]);
   const [activeBuses, setActiveBuses] = useState([]);
-  const [busCount, setBusCount] = useState(0);
+  const [busCount, setBusCount] = useState(null);
+  const [driverUpdates, setDriverUpdates] = useState([]);
 
   const handleLogout = () => {
     localStorage.removeItem('userToken');
@@ -33,25 +34,39 @@ const Dashboard = () => {
         const parsedData = JSON.parse(storedData);
         setUserData(parsedData);
 
+        // Load user-specific data
         if (parsedData.role === 'user') {
           const [tripsResponse, bookingsResponse] = await Promise.all([
             axios.get('/api/bookings/upcoming', {
-              headers: { Authorization: `Bearer ${token}` }
+              headers: { Authorization: `Bearer ${token}` },
             }),
             axios.get('/api/bookings/recent', {
-              headers: { Authorization: `Bearer ${token}` }
-            })
+              headers: { Authorization: `Bearer ${token}` },
+            }),
           ]);
           setUpcomingTrips(tripsResponse.data);
           setRecentBookings(bookingsResponse.data);
         }
 
-        const busesResponse = await axios.get('/api/buses/active', {
-          headers: { Authorization: `Bearer ${token}` }
+        // Load driver updates (for driver & admin)
+        const updatesResponse = await axios.get('/api/bus-updates', {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        setActiveBuses(busesResponse.data.buses);
-        setBusCount(busesResponse.data.count);
+        console.log('bus-updates →', updatesResponse.data);
+        setDriverUpdates(updatesResponse.data);
 
+        // Load active buses data
+        const busesResponse = await axios.get('/api/buses/active', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (parsedData.role === 'admin') {
+          setActiveBuses(busesResponse.data.buses);
+          setBusCount(busesResponse.data.count);
+        } else {
+          setActiveBuses(busesResponse.data.buses);
+          setBusCount(null);
+        }
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -75,9 +90,8 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h2>The Mona Metro</h2>
+          <h2>🚌 The Mona Metro</h2>
         </div>
-
         <nav className="sidebar-menu">
           <ul>
             <li>
@@ -86,16 +100,12 @@ const Dashboard = () => {
                 <span>Dashboard</span>
               </Link>
             </li>
-
-            {(userData?.role === 'driver' || userData?.role === 'user' || userData?.role === 'admin') && (
-              <li>
-                <Link to="/profile" className="menu-item">
-                  <i className="fas fa-user"></i>
-                  <span>Profile</span>
-                </Link>
-              </li>
-            )}
-
+            <li>
+              <Link to="/profile" className="menu-item">
+                <i className="fas fa-user"></i>
+                <span>Profile</span>
+              </Link>
+            </li>
             {userData?.role !== 'driver' && (
               <li>
                 <Link to="/schedule" className="menu-item">
@@ -104,7 +114,6 @@ const Dashboard = () => {
                 </Link>
               </li>
             )}
-
             {userData?.role === 'user' && (
               <li>
                 <Link to="/feedback" className="menu-item">
@@ -113,7 +122,6 @@ const Dashboard = () => {
                 </Link>
               </li>
             )}
-
             {userData?.role === 'admin' && (
               <li>
                 <Link to="/admin/feedback" className="menu-item">
@@ -122,7 +130,6 @@ const Dashboard = () => {
                 </Link>
               </li>
             )}
-
             {(userData?.role === 'admin' || userData?.role === 'driver') && (
               <li>
                 <Link to="/admin/communication" className="menu-item">
@@ -133,7 +140,6 @@ const Dashboard = () => {
             )}
           </ul>
         </nav>
-
         <div className="sidebar-footer">
           <button onClick={handleLogout} className="logout-btn">
             <i className="fas fa-sign-out-alt"></i>
@@ -157,6 +163,7 @@ const Dashboard = () => {
         </header>
 
         <div className="dashboard-cards">
+          {/* User‑only cards */}
           {userData?.role === 'user' && (
             <>
               <div className="card">
@@ -213,9 +220,42 @@ const Dashboard = () => {
             </>
           )}
 
+          {/* Driver & Admin: Driver Updates */}
+          {(userData?.role === 'driver' || userData?.role === 'admin') && (
+            <div className="driver-updates card">
+              <div className="card-header">
+                <h3>Driver Messages</h3>
+                <i className="fas fa-bullhorn"></i>
+              </div>
+              <div className="card-content">
+                {driverUpdates.length > 0 ? (
+                  driverUpdates.map(update => (
+                    <div key={update.update_id} className="update-item">
+                      <p>
+                        <strong>{update.driver_name || 'Driver'}:</strong>{' '}
+                        {update.message}
+                      </p>
+                      <span className="timestamp">
+                        {new Date(update.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p>No updates from drivers</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Everyone: Active Buses */}
           <div className="recent-activities">
             <div className="card-header">
-              <h3>Active Buses ({busCount})</h3>
+              <h3>
+                Active Buses
+                {userData?.role === 'admin' && busCount !== null && (
+                  <span className="count-badge">({busCount})</span>
+                )}
+              </h3>
               <i className="fas fa-bus"></i>
             </div>
             <div className="activities-table-container">
@@ -223,27 +263,30 @@ const Dashboard = () => {
                 <table>
                   <thead>
                     <tr>
-                      <th>Bus ID</th>
                       <th>Bus Number</th>
                       <th>Route</th>
-                      <th>Status</th>
                       <th>Next Departure</th>
-                      {userData?.role === 'admin' && <th>Driver</th>}
+                      {userData?.role === 'admin' && <th>Status</th>}
                     </tr>
                   </thead>
                   <tbody>
                     {activeBuses.map(bus => (
                       <tr key={bus.busId}>
-                        <td>{bus.busId}</td>
                         <td>{bus.busNumber}</td>
                         <td>{bus.currentRoute}</td>
                         <td>
-                          <span className={`status ${bus.status.toLowerCase()}`}>
-                            {bus.status}
-                          </span>
+                          {new Date(bus.nextDeparture).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
                         </td>
-                        <td>{new Date(bus.nextDeparture).toLocaleString()}</td>
-                        {userData?.role === 'admin' && <td>{bus.driverName || 'N/A'}</td>}
+                        {userData?.role === 'admin' && (
+                          <td>
+                            <span className={`status ${bus.status.toLowerCase()}`}>
+                              {bus.status}
+                            </span>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -254,38 +297,6 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-
-        {userData?.role === 'user' && (
-          <div className="recent-activities">
-            <h2>Recent Bookings</h2>
-            <div className="activities-table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Route</th>
-                    <th>Time</th>
-                    <th>Status</th>
-                    <th>Seats</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentBookings.map(booking => (
-                    <tr key={booking.bookingId}>
-                      <td>{booking.startLocation} → {booking.endLocation}</td>
-                      <td>{new Date(booking.departureTime).toLocaleTimeString()}</td>
-                      <td>
-                        <span className={`status ${booking.status.toLowerCase()}`}>
-                          {booking.status}
-                        </span>
-                      </td>
-                      <td>{booking.seats}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
       </main>
     </div>
   );

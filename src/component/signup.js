@@ -15,7 +15,6 @@ const Signup = () => {
   });
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -61,7 +60,7 @@ const Signup = () => {
   
   return (
     <div className="signup-container">
-      <h1>The Mona Metro</h1>
+      <h1> 🚌 The Mona Metro</h1>
       <form className="signup-form" onSubmit={handleSubmit}>
         <h2>Registration Form</h2>
         <div className="form-row">

@@ -33,7 +33,7 @@ const Home = () => {
       <main className="hero-section">
         <div className="hero-content">
           <h2 className="hero-title">Welcome Pelicans</h2>
-          <p className="hero-subtitle">The Mona Metro is Now Available. Sign Up Today!</p>
+          <p className="hero-subtitle">🚌 The Mona Metro is Now Available. Sign Up Today!</p>
           <button onClick={() => navigate('/signup')} className="cta-button">
             Get Started
           </button>

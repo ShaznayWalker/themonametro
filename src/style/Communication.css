@@ -1,0 +1,282 @@
+/* communication.css */
+@import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
+
+:root {
+  --primary-blue: #104971;
+  --accent-yellow: #FFCC00;
+  --dark-text: #2c3e50;
+  --light-text: #ffffff;
+  --transparent-white: rgba(255, 255, 255, 0.85);
+  --shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  --border-radius: 8px;
+  --sidebar-width: 280px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+              url('../images/bus-system.jpg') center/cover fixed;
+}
+
+/* Sidebar Styles */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--primary-blue);
+  padding: 25px;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+}
+
+.sidebar-header {
+  padding: 20px 0;
+  border-bottom: 2px solid var(--accent-yellow);
+  margin-bottom: 25px;
+}
+
+.sidebar-header h2 {
+  color: var(--light-text);
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.sidebar-menu ul {
+  list-style: none;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  color: var(--light-text);
+  padding: 15px;
+  margin: 8px 0;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.menu-item:hover,
+.menu-item.active {
+  background: var(--accent-yellow);
+  color: var(--primary-blue);
+}
+
+.menu-item i {
+  width: 30px;
+  font-size: 1.1rem;
+}
+
+.sidebar-footer {
+  position: absolute;
+  bottom: 0;
+  width: calc(100% - 50px);
+  padding: 20px 0;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.logout-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--light-text);
+  padding: 12px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Main Content Styles */
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  padding: 40px;
+  background: var(--transparent-white);
+  min-height: 100vh;
+  backdrop-filter: blur(5px);
+}
+
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.content-header h1 {
+  color: var(--dark-text);
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.content-header p {
+  color: var(--primary-blue);
+  font-weight: 500;
+}
+
+/* Communication Channel Specific Styles */
+.feedback-card {
+  background: white;
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.feedback-card h3 {
+  color: var(--primary-blue);
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--primary-blue);
+  font-weight: 500;
+}
+
+select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--primary-blue);
+  border-radius: var(--border-radius);
+  background: white;
+  font-size: 1rem;
+}
+
+textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 1rem;
+  border: 2px solid var(--primary-blue);
+  border-radius: var(--border-radius);
+  resize: vertical;
+  font-size: 1rem;
+}
+
+.submit-button {
+  background: var(--primary-blue);
+  color: white;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.submit-button:hover {
+  background: var(--accent-yellow);
+  color: var(--primary-blue);
+}
+
+/* Updates List Styles */
+.updates-list {
+  margin-top: 1.5rem;
+}
+
+.info-box {
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid var(--primary-blue);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.info-header span {
+  color: var(--primary-blue);
+  font-weight: 600;
+}
+
+.driver-name {
+  color: var(--dark-text);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.error {
+  color: #dc3545;
+  background: #ffecec;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  margin: 1rem 0;
+  border: 1px solid #dc3545;
+}
+
+.success {
+  color: #28a745;
+  background: #e8f5e9;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  margin: 1rem 0;
+  border: 1px solid #28a745;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 20px;
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .content-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .feedback-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .info-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  select, textarea {
+    font-size: 0.9rem;
+  }
+}

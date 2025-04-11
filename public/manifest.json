@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Mona Metro",
+  "name": "Mona Metro Transportation System",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +10,28 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#2A5C82",
+  "background_color": "#F9F7F3",
+  "description": "Official transportation system for Mona Metro",
+  "orientation": "portrait-primary",
+  "categories": ["transportation", "navigation"],
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "type": "image/png",
+      "sizes": "1080x1920"
+    }
+  ]
 }

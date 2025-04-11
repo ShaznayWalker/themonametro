@@ -21,12 +21,12 @@
 
 body {
   min-height: 100vh;
-  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+  background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
               url('../images/bus-system.jpg') center center no-repeat;
   background-size: cover;
   background-attachment: fixed;
   color: var(--light-text);
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .dashboard-container {
@@ -52,11 +52,9 @@ body {
 .sidebar::-webkit-scrollbar {
   width: 8px;
 }
-
 .sidebar::-webkit-scrollbar-track {
   background: var(--scrollbar-track);
 }
-
 .sidebar::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb);
   border-radius: 4px;
@@ -66,22 +64,10 @@ body {
   padding-bottom: 25px;
   border-bottom: 2px solid var(--accent-yellow);
 }
-
 .sidebar-header h2 {
   color: var(--light-text);
   font-size: 24px;
   margin-bottom: 25px;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  color: var(--light-text);
-}
-
-.user-info i {
-  font-size: 32px;
 }
 
 /* Menu Items */
@@ -89,7 +75,6 @@ body {
   list-style: none;
   margin-top: 30px;
 }
-
 .menu-item {
   display: flex;
   align-items: center;
@@ -100,13 +85,11 @@ body {
   margin: 8px 0;
   transition: all 0.3s ease;
 }
-
 .menu-item:hover {
   background: var(--accent-yellow);
   color: var(--primary-blue);
   text-shadow: none;
 }
-
 .menu-item i {
   width: 30px;
   font-size: 18px;
@@ -129,16 +112,19 @@ body {
   transition: all 0.3s ease;
 }
 
-.logout-btn:hover {
-  background: #ffd633;
+.sidebar-footer .logout-btn:hover {
+  background: #68251d;  /* red */
+  color: white;
+  backdrop-filter: blur;
 }
 
-/* Main Content */
+
+
 .main-content {
   flex: 1;
   padding: 40px;
   background: var(--transparent-white);
-  margin: 20px 20px 20px 300px; /* Account for fixed sidebar */
+  margin: 20px 20px 20px 300px;
   border-radius: 12px;
   box-shadow: var(--shadow);
   color: var(--dark-text);
@@ -151,17 +137,14 @@ body {
 .main-content::-webkit-scrollbar {
   width: 10px;
 }
-
 .main-content::-webkit-scrollbar-track {
   background: var(--scrollbar-track);
   border-radius: 0 12px 12px 0;
 }
-
 .main-content::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb);
   border-radius: 4px;
 }
-
 .main-content::-webkit-scrollbar-thumb:hover {
   background-color: #0d3a5a;
 }
@@ -172,19 +155,16 @@ body {
   align-items: center;
   margin-bottom: 30px;
 }
-
 .content-header h1 {
   color: var(--primary-blue);
   font-size: 32px;
 }
-
 .notification-icon {
   font-size: 24px;
   color: var(--primary-blue);
   cursor: pointer;
   position: relative;
 }
-
 .notification-badge {
   position: absolute;
   top: -8px;
@@ -201,7 +181,7 @@ body {
   font-weight: bold;
 }
 
-/* Cards */
+/* Cards Grid */
 .dashboard-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -209,6 +189,7 @@ body {
   margin-bottom: 30px;
 }
 
+/* Standard Card */
 .card {
   background: var(--transparent-white);
   padding: 25px;
@@ -217,30 +198,74 @@ body {
   backdrop-filter: blur(5px);
   transition: transform 0.3s ease;
 }
-
 .card:hover {
   transform: translateY(-5px);
 }
-
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
 }
-
 .card-header i {
   font-size: 28px;
   color: var(--primary-blue);
 }
-
 .card-value {
   font-size: 36px;
   font-weight: 700;
   color: var(--primary-blue);
 }
 
-/* Table */
+/* Driver Updates Card */
+.driver-updates {
+  background: var(--transparent-white);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(5px);
+  transition: transform 0.3s ease;
+}
+.driver-updates:hover {
+  transform: translateY(-5px);
+}
+.driver-updates .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.driver-updates .card-header h3 {
+  color: var(--primary-blue);
+  font-size: 24px;
+  margin: 0;
+}
+.driver-updates .card-header i {
+  font-size: 28px;
+  color: var(--accent-yellow);
+}
+.driver-updates .card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.update-item {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 5px solid var(--primary-blue);
+  position: relative;
+}
+.update-item p {
+  margin: 0 0 8px;
+  color: var(--dark-text);
+}
+.update-item .timestamp {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+/* Recent Activities Table */
 .recent-activities {
   background: var(--transparent-white);
   padding: 25px;
@@ -248,47 +273,39 @@ body {
   box-shadow: var(--shadow);
   backdrop-filter: blur(5px);
 }
-
 .activities-table-container {
   overflow-x: auto;
 }
-
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
   min-width: 600px;
 }
-
 th {
   background: var(--primary-blue);
   color: var(--light-text);
   padding: 15px;
   text-align: left;
 }
-
 td {
   padding: 15px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0,0,0,0.1);
 }
-
 .status {
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 14px;
   font-weight: 500;
 }
-
 .confirmed {
   background: var(--accent-yellow);
   color: var(--primary-blue);
 }
-
 .pending {
   background: #ff9800;
   color: white;
 }
-
 .completed {
   background: #4caf50;
   color: white;
@@ -301,12 +318,11 @@ td {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0,0,0,0.5);
   color: white;
 }
-
 .loading-spinner {
-  border: 5px solid rgba(255, 255, 255, 0.3);
+  border: 5px solid rgba(255,255,255,0.3);
   border-radius: 50%;
   border-top: 5px solid var(--accent-yellow);
   width: 50px;
@@ -314,7 +330,6 @@ td {
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
 }
-
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -325,43 +340,25 @@ td {
   .dashboard-container {
     flex-direction: column;
   }
-
   .sidebar {
     width: 100%;
     position: relative;
     height: auto;
     margin-bottom: 20px;
   }
-
   .main-content {
     margin: 10px;
     padding: 20px;
   }
-
   .content-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
   }
-
   .content-header h1 {
     font-size: 24px;
   }
-
-  .active {
-    background: #4caf50;
-    color: white;
-  }
-  
-  .inactive {
-    background: #e74c3c;
-    color: white;
-  }
-  
 }
-
-
-
 @media (max-width: 768px) {
   .dashboard-cards {
     grid-template-columns: 1fr;
