@@ -7,6 +7,7 @@ import Profile from "./component/profile";
 import Schedule from "./component/schedule";
 import Feedback from "./component/feedback";
 import Communication from "./component/communication";
+import Payment from "./component/payment"; // Added Payment import
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const user = JSON.parse(localStorage.getItem('userData'));
@@ -23,16 +24,18 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Public routes */}
         <Route path="/signup" element={<Signup />} />
         <Route path="/signin" element={<Signin />} />
         <Route path="/" element={<Home />} />
-        
-        {/* Protected Routes */}
+
+        {/* Protected routes */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/schedule" element={<ProtectedRoute><Schedule /></ProtectedRoute>} />
-        
-        {/* Feedback Routes */}
+        <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+
+        {/* Feedback routes */}
         <Route path="/feedback" element={
           <ProtectedRoute>
             <Feedback />
@@ -45,7 +48,12 @@ function App() {
           </ProtectedRoute>
         } />
 
-        <Route path="/admin/communication" element={<ProtectedRoute><Communication /></ProtectedRoute>} />
+        {/* Communication route */}
+        <Route path="/admin/communication" element={
+          <ProtectedRoute requiredRole="admin">
+            <Communication />
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   );

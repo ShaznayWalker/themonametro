@@ -187,8 +187,75 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 25px;
   margin-bottom: 30px;
+  align-items: start;
+}
+/* Simulated booking styles */
+.simulated-booking {
+  position: relative;
+  background-color: #f8f9fa;
+  border-left: 4px solid #17a2b8;
 }
 
+.simulation-badge {
+  font-size: 0.75rem;
+  background: #17a2b8;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+}
+
+.simulated-warning {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Improved trip item layout */
+.trip-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin: 8px 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.trip-meta {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.trip-status {
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.trip-status.confirmed {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.trip-status.pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.no-trips-message {
+  text-align: center;
+  color: #6c757d;
+  padding: 20px;
+}
 /* Standard Card */
 .card {
   background: var(--transparent-white);
@@ -197,7 +264,17 @@ body {
   box-shadow: var(--shadow);
   backdrop-filter: blur(5px);
   transition: transform 0.3s ease;
+  height: auto; 
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
 }
+
+.card-content {
+  flex: 1; 
+  overflow-y: auto;
+}
+
 .card:hover {
   transform: translateY(-5px);
 }
@@ -248,6 +325,17 @@ body {
   display: flex;
   flex-direction: column;
   gap: 15px;
+}
+.driver-updates .card-content {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Recent Activities Table */
+.recent-activities {
+  min-height: auto;
+  align-self: flex-start;
 }
 .update-item {
   background: white;

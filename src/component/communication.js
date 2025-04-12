@@ -10,15 +10,43 @@ const CommunicationChannel = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [userData, setUserData] = useState(JSON.parse(localStorage.getItem('userData')));
-  
+  const [userData] = useState(JSON.parse(localStorage.getItem('userData')));
 
   const busOptions = [
-    { value: '', label: '-- Select a bus --' },
-    { value: 'spanish_town', label: 'Spanish Town' },
-    { value: 'gregory_park', label: 'Gregory Park' },
-    { value: 'greater_portmore_17', label: 'Greater Portmore 17' },
-    { value: 'greater_portmore_20', label: 'Greater Portmore 20' }
+    { 
+      value: '', 
+      label: '-- Select Bus Route --' 
+    },
+    { 
+      value: 1, 
+      label: 'Spanish Town → UWI via Highway 2000',
+      origin: 'Spanish Town, LOJ Shopping Centre',
+      destination: 'UWI- Bus Bay/ Commuters Lounge'
+    },
+    { 
+      value: 2, 
+      label: 'Gregory Park → UWI via Gregory Park Road',
+      origin: 'Christian Gardens, Gregory Park',
+      destination: 'UWI- Bus Bay/ Commuters Lounge'
+    },
+    { 
+      value: 3, 
+      label: 'Portmore 17 → UWI via Portmore Toll Road',
+      origin: 'Shoppers Fair, Greater Portmore 17',
+      destination: 'UWI- Bus Bay/ Commuters Lounge'
+    },
+    { 
+      value: 4, 
+      label: 'Portmore 20 → UWI via Portmore Toll Road',
+      origin: 'Shoppers Fair, Greater Portmore 20',
+      destination: 'UWI- Bus Bay/ Commuters Lounge'
+    },
+    { 
+      value: 5, 
+      label: 'UWI → Spanish Town via Highway 2000',
+      origin: 'UWI- Bus Bay/ Commuters Lounge',
+      destination: 'Spanish Town, LOJ Shopping Centre'
+    }
   ];
 
   useEffect(() => {

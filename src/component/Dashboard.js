@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation, } from 'react-router-dom';
 import axios from 'axios';
 import '../style/dashboard.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [upcomingTrips, setUpcomingTrips] = useState([]);
@@ -24,7 +25,9 @@ const Dashboard = () => {
     const checkAuthAndLoadData = async () => {
       const token = localStorage.getItem('userToken');
       const storedData = localStorage.getItem('userData');
+      const locationState = location.state || {}; // Get navigation state
 
+      // Immediate auth check
       if (!token || !storedData) {
         navigate('/signin');
         return;
@@ -34,31 +37,51 @@ const Dashboard = () => {
         const parsedData = JSON.parse(storedData);
         setUserData(parsedData);
 
-        // Load user-specific data
-        if (parsedData.role === 'user') {
-          const [tripsResponse, bookingsResponse] = await Promise.all([
-            axios.get('/api/bookings/upcoming', {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get('/api/bookings/recent', {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
+        // Check for simulated payment success
+        if (locationState.paymentSuccess) {
+          // Handle simulated bookings
+          const simulatedBookings = locationState.newBookings || [];
+
+          setUpcomingTrips(prev => [
+            ...simulatedBookings.slice(0, 3), // Show first 3 as upcoming
+            ...prev.filter(b => !b.simulated) // Keep real bookings
           ]);
-          setUpcomingTrips(tripsResponse.data);
-          setRecentBookings(bookingsResponse.data);
+
+          setRecentBookings(prev => [
+            ...simulatedBookings.slice(0, 5), // Show first 5 as recent
+            ...prev.filter(b => !b.simulated)
+          ]);
+
+          // Clear navigation state
+          navigate(location.pathname, { replace: true, state: {} });
+        } else {
+          // Only fetch real data if no simulation
+          if (parsedData.role === 'user') {
+            const [tripsResponse, bookingsResponse] = await Promise.all([
+              axios.get('/api/bookings/upcoming', {
+                headers: { Authorization: `Bearer ${token}` },
+              }),
+              axios.get('/api/bookings/recent', {
+                headers: { Authorization: `Bearer ${token}` },
+              }),
+            ]);
+            setUpcomingTrips(tripsResponse.data);
+            setRecentBookings(bookingsResponse.data);
+          }
         }
 
-        // Load driver updates (for driver & admin)
-        const updatesResponse = await axios.get('/api/bus-updates', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // Common data loads (always fetch fresh)
+        const [updatesResponse, busesResponse] = await Promise.all([
+          axios.get('/api/bus-updates', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get('/api/buses/active', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
         console.log('bus-updates →', updatesResponse.data);
         setDriverUpdates(updatesResponse.data);
-
-        // Load active buses data
-        const busesResponse = await axios.get('/api/buses/active', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
 
         if (parsedData.role === 'admin') {
           setActiveBuses(busesResponse.data.buses);
@@ -67,15 +90,20 @@ const Dashboard = () => {
           setActiveBuses(busesResponse.data.buses);
           setBusCount(null);
         }
+
       } catch (error) {
         console.error('Error loading data:', error);
+        if (error.response?.status === 401) {
+          localStorage.clear();
+          navigate('/signin');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     checkAuthAndLoadData();
-  }, [navigate]);
+  }, [navigate, location.state, location.pathname]); // Added location dependencies
 
   if (loading) {
     return (
@@ -174,20 +202,44 @@ const Dashboard = () => {
                 <div className="card-content">
                   {upcomingTrips.length > 0 ? (
                     upcomingTrips.map(trip => (
-                      <div key={trip.bookingId} className="trip-item">
-                        <div className="trip-route">
-                          {trip.startLocation} → {trip.endLocation}
+                      <div
+                        key={trip.bookingId}
+                        className={`trip-item ${trip.simulated ? 'simulated-booking' : ''}`}
+                      >
+                        <div className="trip-info">
+                          <div className="trip-route">
+                            {trip.startLocation} → {trip.endLocation}
+                            {trip.simulated && (
+                              <span className="simulation-badge">Simulation</span>
+                            )}
+                          </div>
+                          <div className="trip-meta">
+                            <div className="trip-time">
+                              <i className="fas fa-clock"></i>
+                              {new Date(trip.departureTime).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                            <div className={`trip-status ${trip.status.toLowerCase()}`}>
+                              <i className="fas fa-circle"></i>
+                              {trip.status}
+                            </div>
+                          </div>
                         </div>
-                        <div className="trip-time">
-                          {new Date(trip.departureTime).toLocaleTimeString()}
-                        </div>
-                        <div className={`trip-status ${trip.status}`}>
-                          {trip.status}
-                        </div>
+                        {trip.simulated && (
+                          <div className="simulated-warning">
+                            <i className="fas fa-flask"></i>
+                            Demo transaction
+                          </div>
+                        )}
                       </div>
                     ))
                   ) : (
-                    <p>No upcoming trips booked</p>
+                    <p className="no-trips-message">
+                      <i className="fas fa-calendar-times"></i>
+                      No upcoming trips booked
+                    </p>
                   )}
                 </div>
               </div>

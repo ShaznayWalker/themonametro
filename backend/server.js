@@ -36,7 +36,6 @@ const authenticateToken = (req, res, next) => {
 // Database initialization
 async function initializeDatabase() {
   try {
-    // Create users table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -46,11 +45,25 @@ async function initializeDatabase() {
         email VARCHAR(100) NOT NULL UNIQUE CHECK (email = LOWER(email)),
         password VARCHAR(255) NOT NULL,
         role VARCHAR(20) NOT NULL DEFAULT 'user',
+        wallet_balance NUMERIC(10,2) DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
-    // Create feedback table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS buses (
+        route_id SERIAL PRIMARY KEY,
+        origin VARCHAR(255) NOT NULL,
+        destination VARCHAR(255) NOT NULL,
+        via VARCHAR(255) NOT NULL,
+        departure_time TIME NOT NULL,
+        arrival_time TIME NOT NULL,
+        cost NUMERIC(10,2) NOT NULL,
+        status VARCHAR(20) DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS feedback (
         feedback_id SERIAL PRIMARY KEY,
@@ -60,6 +73,32 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS bookings (
+        booking_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(id),
+        bus_id INT REFERENCES buses(route_id),
+        seats INT NOT NULL,
+        status VARCHAR(20) DEFAULT 'pending',
+        booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        departure_time TIMESTAMP NOT NULL,
+        start_location VARCHAR(255) NOT NULL,
+        end_location VARCHAR(255) NOT NULL
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS bus_updates (
+        update_id SERIAL PRIMARY KEY,
+        bus_id INT REFERENCES buses(route_id),
+        driver_id INT REFERENCES users(id),
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+      
 
     console.log("Database tables initialized");
   } catch (error) {
@@ -242,6 +281,25 @@ app.get('/api/buses/active', authenticateToken, async (req, res) => {
   }
 });
 
+
+app.get('/api/bus-schedule', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT 
+        route_id AS id,
+        origin AS pickup,
+        destination,
+        departure_time AS time,
+        via AS route,
+        cost
+      FROM buses
+      WHERE status = 'active'
+    `);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch schedule' });
+  }
+});
 // Add these endpoints after the buses endpoint
 // Bookings endpoints
 app.get('/api/bookings/upcoming', authenticateToken, async (req, res) => {
@@ -327,17 +385,31 @@ app.get('/api/bus-updates', async (req, res) => {
   }
 });
 
-app.get('/api/bus-updates', async (req, res) => {
-  try {
-    const [rows] = await db.execute('SELECT * FROM driver_updates ORDER BY created_at DESC');
-    res.json(rows);
-  } catch (err) {
-    console.error('Error fetching driver updates:', err);
-    res.status(500).json({ message: 'Failed to fetch driver updates' });
-  }
+// Replace the /api/payments endpoint with this mock version
+app.post('/api/payments', authenticateToken, (req, res) => {
+  // Simulate successful payment processing
+  console.log('[Simulation] Payment processed:', req.body);
+  res.json({
+    simulated: true,
+    message: `Simulated payment of $${req.body.amount.toFixed(2)} successful`,
+    booking: {
+      id: Math.floor(Math.random() * 1000),
+      ...req.body
+    }
+  });
 });
 
-
+app.post('/api/wallet/topup', authenticateToken, (req, res) => {
+  const { amount } = req.body;
+  const simulatedBalance = Math.random() * 1000 + 500; // Random balance for demo
+  
+  console.log('[Simulation] Wallet top-up:', amount);
+  res.json({
+    simulated: true,
+    new_balance: simulatedBalance,
+    message: `Simulated top-up of $${amount.toFixed(2)} complete`
+  });
+});
 // Server startup
 pool.connect()
   .then(() => {
