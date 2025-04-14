@@ -81,13 +81,6 @@ const BusSchedule = () => {
     setShowConfirmButton(false);
   };
 
-  const groupedSchedules = schedules.reduce((acc, schedule) => {
-    const period = getPeriod(schedule.time);
-    if (!acc[period]) acc[period] = [];
-    acc[period].push(schedule);
-    return acc;
-  }, {});
-
   const filteredSchedules = schedules.filter((s) => {
     return (
       (!pickupFilter || s.pickup === pickupFilter) &&
@@ -106,45 +99,53 @@ const BusSchedule = () => {
   if (loading) return <div className="dashboard-loading">Loading schedules...</div>;
 
   return (
-    <div className="dashboard-container">
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <h2>UWI Metro</h2>
+    <div className="bus-schedule-container">
+      {/* Sidebar */}
+      <aside className="bus-schedule-sidebar">
+        <div className="bus-schedule-sidebar-header">
+          <span className="app-logo">🚌</span>
+          <h2>The Mona Metro</h2>
         </div>
-        <div className="sidebar-menu">
-          <ul>
-            <li><a href="/dashboard" className="menu-item"><i className="fas fa-home" />Dashboard</a></li>
-            <li><a href="/schedule" className="menu-item"><i className="fas fa-bus" />Schedule</a></li>
-            <li><a href="/payment" className="menu-item"><i className="fas fa-credit-card" />Payment</a></li>
-            <li><a href="/profile" className="menu-item"><i className="fas fa-user" />Profile</a></li>
-          </ul>
-        </div>
-        <div className="sidebar-footer">
-          <button className="logout-btn"><i className="fas fa-sign-out-alt" />Logout</button>
+        <ul className="bus-schedule-menu">
+          <li><a href="/dashboard" className="menu-item">Dashboard</a></li>
+          <li><a href="/profile" className="menu-item active">Profile</a></li>
+          <li><a href="/schedule" className="menu-item">View Bus Schedule</a></li>
+          <li><a href="/payment" className="menu-item">Transactions</a></li>
+
+        </ul>
+        <div className="bus-schedule-sidebar-footer">
+          <button
+            className="bus-schedule-logout-btn"
+            onClick={() => {
+              localStorage.clear();
+              sessionStorage.clear();
+              navigate('/signin');
+            }}
+          >
+            <i className="fas fa-sign-out-alt" /> Logout
+          </button>
         </div>
       </aside>
 
-      <main className="main-content">
-        <div className="content-header">
-          <h1>Bus Schedule</h1>
-        </div>
+
+      {/* Main */}
+      <main className="bus-schedule-main">
+        <h1 className="bus-schedule-title">Bus Schedule</h1>
 
         <p><strong>Filter by:</strong></p>
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+        <div className="bus-schedule-filters">
           <select value={pickupFilter} onChange={(e) => setPickupFilter(e.target.value)}>
             <option value="">All Pickup Locations</option>
             {uniqueValues('pickup').map((pickup, idx) => (
               <option key={idx} value={pickup}>{pickup}</option>
             ))}
           </select>
-
           <select value={destinationFilter} onChange={(e) => setDestinationFilter(e.target.value)}>
             <option value="">All Destinations</option>
             {uniqueValues('destination').map((destination, idx) => (
               <option key={idx} value={destination}>{destination}</option>
             ))}
           </select>
-
           <select value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)}>
             <option value="">All Times</option>
             {uniqueValues('time').map((time, idx) => (
@@ -153,38 +154,35 @@ const BusSchedule = () => {
           </select>
         </div>
 
-        {selectionError && <div className="error-message" style={{ color: 'red', margin: '10px 0' }}>{selectionError}</div>}
+        {selectionError && (
+          <div className="error-message" style={{ color: 'red', margin: '10px 0' }}>
+            {selectionError}
+          </div>
+        )}
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
+        <div className="bus-schedule-buttons">
           <button onClick={resetFilters} className="reset-btn">Reset Filters</button>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <button onClick={showConfirmButton ? handleGoBackClick : handleReserveSeatClick} className="action-btn">
+            <button
+              onClick={showConfirmButton ? handleGoBackClick : handleReserveSeatClick}
+              className="action-btn"
+            >
               {showConfirmButton ? 'Go Back' : 'Reserve Seat'}
             </button>
             {showConfirmButton && (
               <button
                 className="confirm-btn"
                 onClick={() => {
-                  // Convert all selected trip IDs to numbers for consistent comparison
-                  console.log('SelectedTrips:', selectedTrips); // Add this first
-                  console.log('All bus IDs:', schedules.map(s => s.bus));
                   const numericSelectedTrips = selectedTrips.map(Number);
-
-                  console.log('Selected trip IDs:', numericSelectedTrips);
-                  console.log('All bus IDs:', schedules.map(s => s.bus));
-
-                  // Validate selections against actual bus IDs
                   const selectedSchedules = schedules.filter(s =>
-                    selectedTrips.includes(Number(s.bus))
+                    numericSelectedTrips.includes(Number(s.bus))
                   );
 
                   if (selectedSchedules.length === 0) {
-                    console.error('No valid trips selected');
                     setSelectionError('Please select at least one valid trip');
                     return;
                   }
 
-                  // Create payment payload with type-safe data
                   const paymentPayload = {
                     amountToPay: selectedSchedules.length * 300,
                     selectedTrips: selectedSchedules.map(trip => ({
@@ -196,7 +194,6 @@ const BusSchedule = () => {
                     }))
                   };
 
-                  console.log('Payment payload:', paymentPayload);
                   navigate('/payment', { state: paymentPayload });
                 }}
               >
@@ -207,11 +204,11 @@ const BusSchedule = () => {
         </div>
 
         {Object.keys(groupedFilteredSchedules).length > 0 ? (
-          Object.keys(groupedFilteredSchedules).map((period) => (
+          Object.entries(groupedFilteredSchedules).map(([period, trips]) => (
             <div key={period} className="recent-activities">
               <h3>{period} Trips</h3>
               <div className="activities-table-container">
-                <table className="schedule-table">
+                <table className="bus-schedule-table">
                   <thead>
                     <tr>
                       <th>Bus ID</th>
@@ -224,7 +221,7 @@ const BusSchedule = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {groupedFilteredSchedules[period].map((schedule, idx) => (
+                    {trips.map((schedule, idx) => (
                       <tr key={idx}>
                         <td>{schedule.bus}</td>
                         <td>{schedule.pickup}</td>
@@ -234,14 +231,11 @@ const BusSchedule = () => {
                         <td>$300</td>
                         {showCheckboxes && (
                           <td>
-                            {/* Checkbox input for trip selection */}
                             <input
                               type="checkbox"
                               checked={selectedTrips.includes(schedule.bus)}
                               onChange={(e) => {
-
-                                const busId = Number(schedule.bus); // Convert to number
-                                console.log('Selected busId:', busId, 'Type:', typeof busId); // Debug here
+                                const busId = Number(schedule.bus);
                                 setSelectedTrips(prev =>
                                   e.target.checked
                                     ? [...prev, busId]

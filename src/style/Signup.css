@@ -1,12 +1,7 @@
 /* Importing font from Google Fonts */
 @import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
+
 
 body {
   min-height: 100vh;
@@ -84,7 +79,6 @@ h1 {
   transition: all 0.3s ease;
 }
 
-/* Left-aligned dropdown styles */
 .signup-form .form-group label[for="role"] {
   display: inline-block;
   margin-right: 10px;
@@ -165,7 +159,7 @@ button:hover {
   color: #FFCC00;
 }
 
-/* Responsive Adjustments */
+
 @media screen and (max-width: 768px) {
   .signup-container {
     padding: 20px;

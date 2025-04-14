@@ -98,7 +98,33 @@ async function initializeDatabase() {
       )
     `);
 
-      
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS payments (
+        payment_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(id),
+        amount NUMERIC(10,2) NOT NULL,
+        method VARCHAR(50) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    const busesCount = await pool.query('SELECT COUNT(*) FROM buses');
+    if (parseInt(busesCount.rows[0].count) === 0) {
+      await pool.query(`
+        INSERT INTO buses 
+          (route_id, origin, destination, via, departure_time, arrival_time, cost)
+        VALUES
+          (1, 'Spanish Town, LOJ Shopping Centre', 'UWI- Bus Bay/ Commuters Lounge', 'Highway 2000', '08:00:00', '12:00:00', 300.00),
+          (2, 'LOJ Shopping Centre, Spanish Town', 'UWI Commuters Lounge', 'Highway 2000', '05:30:00', '06:30:00', 300.00),
+          (3, 'Christian Gardens, Gregory Park', 'UWI Commuters Lounge', 'Gregory Park Road', '05:30:00', '06:30:00', 300.00),
+          (4, 'Shoppers Fair, Greater Portmore 17', 'UWI Commuters Lounge', 'Portmore Toll Road', '05:30:00', '06:30:00', 300.00),
+          (5, 'UWI Commuters Lounge', 'LOJ Shopping Centre, Spanish Town', 'Highway 2000', '16:30:00', '17:30:00', 300.00),
+          (6, 'UWI Commuters Lounge', 'Gregory Park Christian Gardens', 'Highway 2000', '16:30:00', '17:30:00', 300.00),
+          (7, 'UWI Commuters Lounge', 'Gregory Park Christian Gardens', 'Highway 2000', '19:30:00', '20:30:00', 300.00),
+          (8, 'UWI Commuters Lounge', 'Greater Portmore 17 Shoppers Fair', 'Portmore Toll Road', '16:30:00', '17:30:00', 300.00),
+          (9, 'UWI Commuters Lounge', 'Greater Portmore 20 Shoppers Fair', 'Edgewater', '19:30:00', '20:30:00', 300.00);
+      `);
+    }
 
     console.log("Database tables initialized");
   } catch (error) {
@@ -157,7 +183,7 @@ app.post("/api/signin", async (req, res) => {
   }
 });
 
-// Feedback endpoints
+// view feedback from user
 app.post('/api/feedback', authenticateToken, async (req, res) => {
   if (req.user.role === 'admin') {
     return res.status(403).json({ error: 'Admins cannot submit feedback' });
@@ -190,6 +216,7 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
   }
 });
 
+// view feedback from user
 app.get('/api/feedback', authenticateToken, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Unauthorized access' });
@@ -216,12 +243,11 @@ app.get('/api/feedback', authenticateToken, async (req, res) => {
   }
 });
 
-// Protected profile endpoint
+// profile 
 app.get('/api/profile', authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // Update the query to use `joindate` instead of `joinDate`
     const query = 'SELECT id, firstname, lastname, username, email, role, created_at AS joindate FROM users WHERE id = $1';
     const result = await pool.query(query, [userId]);
     const user = result.rows[0];
@@ -231,7 +257,6 @@ app.get('/api/profile', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Include `joindate` in the response
     res.json({
       id: user.id,
       firstname: user.firstname,
@@ -239,7 +264,7 @@ app.get('/api/profile', authenticateToken, async (req, res) => {
       username: user.username,
       email: user.email,
       role: user.role,
-      joindate: user.joindate // Ensure joindate is returned here
+      joindate: user.joindate 
     });
   } catch (error) {
     console.error(error);
@@ -248,7 +273,7 @@ app.get('/api/profile', authenticateToken, async (req, res) => {
 });
 
 
-
+// check for active buses
 app.get('/api/buses/active', authenticateToken, async (req, res) => {
   try {
     const query = `
@@ -264,7 +289,6 @@ app.get('/api/buses/active', authenticateToken, async (req, res) => {
 
     const { rows } = await pool.query(query);
     
-    // For non-admin users, remove the count and null values
     const response = req.user.role === 'admin' 
       ? { count: rows.length, buses: rows }
       : { buses: rows.map(bus => ({
@@ -281,7 +305,7 @@ app.get('/api/buses/active', authenticateToken, async (req, res) => {
   }
 });
 
-
+// bus- schedule
 app.get('/api/bus-schedule', async (req, res) => {
   try {
     const { rows } = await pool.query(`
@@ -300,32 +324,79 @@ app.get('/api/bus-schedule', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch schedule' });
   }
 });
-// Add these endpoints after the buses endpoint
-// Bookings endpoints
+
+
+// Upcoming bookings
 app.get('/api/bookings/upcoming', authenticateToken, async (req, res) => {
+  
   try {
-    const { rows } = await pool.query(`
-      SELECT * FROM bookings
-      WHERE user_id = $1
-      AND departure_time > NOW()
-      ORDER BY departure_time ASC
-      LIMIT 3
-    `, [req.user.id]);
-    res.json(rows);
+    let rows, params;
+    if (req.user.role === 'admin') {
+      const query = `
+        SELECT
+          b.booking_id,
+          u.firstname || ' ' || u.lastname AS user_name,
+          u.email,
+          b.start_location,
+          b.end_location,
+          b.seats,
+          b.status,
+          b.departure_time
+        FROM bookings b
+        JOIN users u ON b.user_id = u.id
+        ORDER BY b.departure_time ASC
+        LIMIT 10
+      `;
+      ({ rows } = await pool.query(query));
+    } else {
+      const query = `
+        SELECT *
+        FROM bookings
+        WHERE user_id = $1
+          AND departure_time > NOW()
+        ORDER BY departure_time ASC
+        LIMIT 3
+      `;
+      ({ rows } = await pool.query(query, [req.user.id]));
+    }
+    return res.json(rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch upcoming bookings' });
+    console.error('Error in /api/bookings/upcoming:', err);
+    return res.status(500).json({ error: 'Failed to fetch upcoming bookings' });
   }
 });
 
+// Recent bookings
 app.get('/api/bookings/recent', authenticateToken, async (req, res) => {
   try {
-    const { rows } = await pool.query(`
-      SELECT * FROM bookings
-      WHERE user_id = $1
-      ORDER BY booking_date DESC
-      LIMIT 5
-    `, [req.user.id]);
+    let rows;
+    if (req.user.role === 'admin') {
+      ({ rows } = await pool.query(`
+        SELECT
+          b.booking_id,
+          b.user_id,
+          u.firstname || ' ' || u.lastname AS user_name,
+          u.email,
+          b.start_location,
+          b.end_location,
+          b.seats,
+          b.status,
+          b.booking_date,
+          b.departure_time
+        FROM bookings b
+        JOIN users u ON b.user_id = u.id
+        ORDER BY b.booking_date DESC
+        LIMIT 10
+      `));
+    } else {
+      ({ rows } = await pool.query(`
+        SELECT *
+        FROM bookings
+        WHERE user_id = $1
+        ORDER BY booking_date DESC
+        LIMIT 5
+      `, [req.user.id]));
+    }
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -333,7 +404,7 @@ app.get('/api/bookings/recent', authenticateToken, async (req, res) => {
   }
 });
 
-// Add to server.js after the existing endpoints
+
 // Submit bus update
 app.post('/api/bus-updates', authenticateToken, async (req, res) => {
   try {
@@ -343,7 +414,7 @@ app.post('/api/bus-updates', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Check if user has driver privileges
+    
     const user = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
     if (!user.rows[0] || user.rows[0].role !== 'driver') {
       return res.status(403).json({ error: 'Unauthorized access' });
@@ -363,7 +434,7 @@ app.post('/api/bus-updates', authenticateToken, async (req, res) => {
   }
 });
 
-// Get recent bus updates
+// recent bus updates
 app.get('/api/bus-updates', async (req, res) => {
   try {
     const { rows } = await pool.query(`
@@ -385,31 +456,111 @@ app.get('/api/bus-updates', async (req, res) => {
   }
 });
 
-// Replace the /api/payments endpoint with this mock version
-app.post('/api/payments', authenticateToken, (req, res) => {
-  // Simulate successful payment processing
-  console.log('[Simulation] Payment processed:', req.body);
-  res.json({
-    simulated: true,
-    message: `Simulated payment of $${req.body.amount.toFixed(2)} successful`,
-    booking: {
-      id: Math.floor(Math.random() * 1000),
-      ...req.body
-    }
-  });
+
+// payments
+app.post('/api/payments', authenticateToken, async (req, res) => {
+  const { amount, method, trips } = req.body;
+  const userId = req.user.id;
+
+  if (!amount || !method || !Array.isArray(trips) || trips.length === 0) {
+    return res.status(400).json({ error: 'Missing payment data' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    
+    const payRes = await client.query(
+      `INSERT INTO payments (user_id, amount, method)
+       VALUES ($1, $2, $3)
+       RETURNING payment_id, created_at`,
+      [userId, amount, method]
+    );
+    const paymentId = payRes.rows[0].payment_id;
+
+  
+    const bookingPromises = trips.map(trip => {
+      return client.query(
+        `INSERT INTO bookings
+           (user_id, bus_id, seats, status, departure_time, start_location, end_location)
+         VALUES ($1,$2,$3,'confirmed',$4,$5,$6)`,
+        [
+          userId,
+          trip.busId,
+          trip.seats || 1,
+          trip.departureTime,
+          trip.startLocation,
+          trip.endLocation
+        ]
+      );
+    });
+    await Promise.all(bookingPromises);
+
+    await client.query('COMMIT');
+    res.json({
+      success: true,
+      paymentId,
+      message: `Payment of $${amount.toFixed(2)} stored`
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error in /api/payments:', err);
+    res.status(500).json({ error: 'Payment processing failed' });
+  } finally {
+    client.release();
+  }
 });
 
-app.post('/api/wallet/topup', authenticateToken, (req, res) => {
+// top‑up 
+app.post('/api/wallet/topup', authenticateToken, async (req, res) => {
   const { amount } = req.body;
-  const simulatedBalance = Math.random() * 1000 + 500; // Random balance for demo
-  
-  console.log('[Simulation] Wallet top-up:', amount);
-  res.json({
-    simulated: true,
-    new_balance: simulatedBalance,
-    message: `Simulated top-up of $${amount.toFixed(2)} complete`
-  });
+  const userId = req.user.id;
+
+  if (!amount || amount <= 0) {
+    return res.status(400).json({ error: 'Invalid top‑up amount' });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE users
+         SET wallet_balance = wallet_balance + $1
+       WHERE id = $2
+       RETURNING wallet_balance`,
+      [amount, userId]
+    );
+    const newBalance = result.rows[0].wallet_balance;
+    res.json({
+      success: true,
+      newBalance,
+      message: `Wallet topped up by $${amount.toFixed(2)}`
+    });
+  } catch (err) {
+    console.error('Error in /api/wallet/topup:', err);
+    res.status(500).json({ error: 'Top‑up failed' });
+  }
 });
+
+//payment History
+app.get('/api/payments/history', authenticateToken, async (req, res) => {
+  try {
+    let rows;
+    if (req.user.role === 'admin') {
+      ({ rows } = await pool.query(`SELECT * FROM payments ORDER BY created_at DESC`));
+    } else {
+      ({ rows } = await pool.query(
+        `SELECT * FROM payments WHERE user_id = $1 ORDER BY created_at DESC`,
+        [req.user.id]
+      ));
+    }
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch payment history' });
+  }
+});
+
+
 // Server startup
 pool.connect()
   .then(() => {

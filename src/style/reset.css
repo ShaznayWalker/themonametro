@@ -1,0 +1,26 @@
+/* reset.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+:root {
+    --primary-blue: #2A5C82;
+    --accent-yellow: #FFD166;
+    --soft-green: #8BBE97;
+    --warm-red: #FF6B6B;
+    --dark-text: #2B2D42;
+    --light-text: #FDFFFC;
+    --soft-bg: #F9F7F3;
+    --light-bg: #f9f7f3;
+    --card-bg: #fff;
+    --transparent-white: rgba(255, 255, 255, 0.85);
+    --shadow: 0 10px 30px rgba(0,0,0,0.08);
+    --border-radius: 20px;
+    --sidebar-width: 280px;
+    --scrollbar-thumb: #104971;
+    --scrollbar-track: #f1f1f1;
+    --radius: 12px;
+}
+  

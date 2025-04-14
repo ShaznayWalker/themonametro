@@ -1,33 +1,34 @@
-/* communication.css */
 @import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
 
-:root {
-  --primary-blue: #104971;
-  --accent-yellow: #FFCC00;
-  --dark-text: #2c3e50;
-  --light-text: #ffffff;
-  --transparent-white: rgba(255, 255, 255, 0.85);
-  --shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-  --border-radius: 8px;
-  --sidebar-width: 280px;
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
+::-webkit-scrollbar-track {
+  background: rgba(42, 92, 130, 0.1);
+  border-radius: 4px;
 }
 
-.dashboard-container {
+::-webkit-scrollbar-thumb {
+  background: var(--primary-blue);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-yellow);
+}
+
+.comm-channel-container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh; 
   background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
               url('../images/bus-system.jpg') center/cover fixed;
+  overflow: hidden; 
 }
 
-/* Sidebar Styles */
-.sidebar {
+.comm-channel-sidebar {
   width: var(--sidebar-width);
   background: var(--primary-blue);
   padding: 25px;
@@ -37,23 +38,23 @@
   box-shadow: var(--shadow);
 }
 
-.sidebar-header {
+.comm-channel-sidebar-header {
   padding: 20px 0;
   border-bottom: 2px solid var(--accent-yellow);
   margin-bottom: 25px;
 }
 
-.sidebar-header h2 {
+.comm-channel-sidebar-header h2 {
   color: var(--light-text);
   font-size: 1.5rem;
   text-align: center;
 }
 
-.sidebar-menu ul {
+.comm-channel-sidebar-menu ul {
   list-style: none;
 }
 
-.menu-item {
+.comm-channel-menu-item {
   display: flex;
   align-items: center;
   color: var(--light-text);
@@ -64,18 +65,18 @@
   transition: all 0.3s ease;
 }
 
-.menu-item:hover,
-.menu-item.active {
+.comm-channel-menu-item:hover,
+.comm-channel-menu-item.active {
   background: var(--accent-yellow);
   color: var(--primary-blue);
 }
 
-.menu-item i {
+.comm-channel-menu-item i {
   width: 30px;
   font-size: 1.1rem;
 }
 
-.sidebar-footer {
+.comm-channel-sidebar-footer {
   position: absolute;
   bottom: 0;
   width: calc(100% - 50px);
@@ -83,7 +84,7 @@
   border-top: 2px solid rgba(255, 255, 255, 0.1);
 }
 
-.logout-btn {
+.comm-channel-logout-btn {
   width: 100%;
   background: none;
   border: none;
@@ -97,18 +98,21 @@
   transition: background 0.3s ease;
 }
 
-.logout-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+.comm-channel-logout-btn:hover {
+  background: #68251d;
+  color: white;
+  backdrop-filter: blur;
 }
 
-/* Main Content Styles */
-.main-content {
+.comm-channel-main-content {
   flex: 1;
   margin-left: var(--sidebar-width);
   padding: 40px;
   background: var(--transparent-white);
   min-height: 100vh;
   backdrop-filter: blur(5px);
+  overflow-y: auto; 
+  height: 100vh;
 }
 
 .content-header {
@@ -129,7 +133,6 @@
   font-weight: 500;
 }
 
-/* Communication Channel Specific Styles */
 .feedback-card {
   background: white;
   border-radius: var(--border-radius);
@@ -191,7 +194,6 @@ textarea {
   color: var(--primary-blue);
 }
 
-/* Updates List Styles */
 .updates-list {
   margin-top: 1.5rem;
 }
@@ -240,7 +242,6 @@ textarea {
   border: 1px solid #28a745;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .main-content {
     padding: 20px;
@@ -248,13 +249,13 @@ textarea {
     width: 100%;
   }
 
-  .sidebar {
+  .comm-channel-sidebar {
     width: 100%;
     height: auto;
     position: relative;
   }
 
-  .dashboard-container {
+  .comm-channel-container {
     flex-direction: column;
   }
 
@@ -276,7 +277,8 @@ textarea {
     gap: 0.5rem;
   }
 
-  select, textarea {
+  select,
+  textarea {
     font-size: 0.9rem;
   }
 }

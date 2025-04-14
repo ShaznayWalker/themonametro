@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link, useLocation, } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import '../style/dashboard.css';
+import '../style/reset.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -10,9 +11,17 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [upcomingTrips, setUpcomingTrips] = useState([]);
   const [recentBookings, setRecentBookings] = useState([]);
+  const [lastBookingInfo, setLastBookingInfo] = useState(null);
   const [activeBuses, setActiveBuses] = useState([]);
   const [busCount, setBusCount] = useState(null);
   const [driverUpdates, setDriverUpdates] = useState([]);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [adminStats, setAdminStats] = useState({
+    totalUsers: 0,
+    totalRevenue: 0,
+    totalTopups: 0,
+  });
+  const [allPayments, setAllPayments] = useState([]);
 
   const handleLogout = () => {
     localStorage.removeItem('userToken');
@@ -25,9 +34,8 @@ const Dashboard = () => {
     const checkAuthAndLoadData = async () => {
       const token = localStorage.getItem('userToken');
       const storedData = localStorage.getItem('userData');
-      const locationState = location.state || {}; // Get navigation state
+      const locationState = location.state || {};
 
-      // Immediate auth check
       if (!token || !storedData) {
         navigate('/signin');
         return;
@@ -37,26 +45,19 @@ const Dashboard = () => {
         const parsedData = JSON.parse(storedData);
         setUserData(parsedData);
 
-        // Check for simulated payment success
         if (locationState.paymentSuccess) {
-          // Handle simulated bookings
           const simulatedBookings = locationState.newBookings || [];
-
           setUpcomingTrips(prev => [
-            ...simulatedBookings.slice(0, 3), // Show first 3 as upcoming
-            ...prev.filter(b => !b.simulated) // Keep real bookings
+            ...simulatedBookings.slice(0, 3),
+            ...prev.filter(b => !b.simulated),
           ]);
-
           setRecentBookings(prev => [
-            ...simulatedBookings.slice(0, 5), // Show first 5 as recent
-            ...prev.filter(b => !b.simulated)
+            ...simulatedBookings.slice(0, 5),
+            ...prev.filter(b => !b.simulated),
           ]);
-
-          // Clear navigation state
           navigate(location.pathname, { replace: true, state: {} });
         } else {
-          // Only fetch real data if no simulation
-          if (parsedData.role === 'user') {
+          if (parsedData.role === 'user' || parsedData.role === 'admin') {
             const [tripsResponse, bookingsResponse] = await Promise.all([
               axios.get('/api/bookings/upcoming', {
                 headers: { Authorization: `Bearer ${token}` },
@@ -70,7 +71,6 @@ const Dashboard = () => {
           }
         }
 
-        // Common data loads (always fetch fresh)
         const [updatesResponse, busesResponse] = await Promise.all([
           axios.get('/api/bus-updates', {
             headers: { Authorization: `Bearer ${token}` },
@@ -80,17 +80,63 @@ const Dashboard = () => {
           }),
         ]);
 
-        console.log('bus-updates →', updatesResponse.data);
         setDriverUpdates(updatesResponse.data);
 
+        // Allow all roles to see active buses
+        setActiveBuses(busesResponse.data.buses);
+        setBusCount(busesResponse.data.count);
+
+        // Admin-only stats
         if (parsedData.role === 'admin') {
-          setActiveBuses(busesResponse.data.buses);
-          setBusCount(busesResponse.data.count);
-        } else {
-          setActiveBuses(busesResponse.data.buses);
-          setBusCount(null);
+
+          // Fetch payments
+          const paymentsRes = await axios.get('/api/payments/history', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          const payments = paymentsRes.data;
+
+          setAllPayments(payments);
+
+          const filteredPayments = selectedDate
+            ? payments.filter(p => {
+              const paymentDate = new Date(p.created_at).toISOString().split('T')[0];
+              return paymentDate === selectedDate;
+            })
+            : payments;
+
+          const totalRevenue = filteredPayments
+            .filter(p => p.method !== 'topup')
+            .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+          const totalTopups = filteredPayments
+            .filter(p => p.method === 'topup')
+            .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+          setAdminStats(prev => ({ ...prev, totalRevenue, totalTopups }));
         }
 
+        // Process last booking info
+        const lastBooking = recentBookings.length > 0 ? recentBookings[0] : null;
+        if (lastBooking) {
+          const lastBookingDate = new Date(lastBooking.booking_date);
+          const today = new Date();
+          const daysAgo = Math.floor((today - lastBookingDate) / (1000 * 3600 * 24));
+
+          const simplifyLocation = (location) => {
+            if (location.includes('Spanish Town')) return 'Spanish Town';
+            if (location.includes('UWI')) return 'UWI';
+            return location.split(',')[0];
+          };
+
+          const start = simplifyLocation(lastBooking.start_location);
+          const end = simplifyLocation(lastBooking.end_location);
+
+          setLastBookingInfo({
+            tripName: `${start} → ${end}`,
+            daysAgo: isNaN(daysAgo) ? 'N/A' : daysAgo,
+          });
+        }
       } catch (error) {
         console.error('Error loading data:', error);
         if (error.response?.status === 401) {
@@ -103,7 +149,70 @@ const Dashboard = () => {
     };
 
     checkAuthAndLoadData();
-  }, [navigate, location.state, location.pathname]); // Added location dependencies
+  }, [navigate, location.state, location.pathname]);
+
+  useEffect(() => {
+    const fetchFilteredStats = async () => {
+      const token = localStorage.getItem('userToken');
+      const storedData = localStorage.getItem('userData');
+
+      if (!token || !storedData) return;
+
+      const parsedData = JSON.parse(storedData);
+      if (parsedData.role !== 'admin') return;
+
+      try {
+        const paymentsRes = await axios.get('/api/payments/history', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const payments = paymentsRes.data;
+
+        const filteredPayments = selectedDate
+          ? payments.filter(p => {
+            const paymentDate = new Date(p.created_at).toISOString().split('T')[0];
+            return paymentDate === selectedDate;
+          })
+          : payments;
+
+
+        const totalRevenue = filteredPayments
+          .filter(p => p.method !== 'topup')
+          .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+        const totalTopups = filteredPayments
+          .filter(p => p.method === 'topup')
+          .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+        setAdminStats(prev => ({ ...prev, totalRevenue, totalTopups }));
+      } catch (err) {
+        console.error("Error filtering payments:", err);
+      }
+    };
+
+    fetchFilteredStats();
+  }, [selectedDate]);
+
+  // Update admin stats based on selectedDate and allPayments
+  useEffect(() => {
+    if (userData?.role !== 'admin') return;
+
+    const filteredPayments = selectedDate
+      ? allPayments.filter(p =>
+        new Date(p.created_at).toDateString() === new Date(selectedDate).toDateString()
+      )
+      : allPayments;
+
+    const totalRevenue = filteredPayments
+      .filter(p => p.method !== 'topup')
+      .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+    const totalTopups = filteredPayments
+      .filter(p => p.method === 'topup')
+      .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+    setAdminStats(prev => ({ ...prev, totalRevenue, totalTopups }));
+  }, [selectedDate, allPayments, userData?.role]);
 
   if (loading) {
     return (
@@ -113,30 +222,41 @@ const Dashboard = () => {
       </div>
     );
   }
+  const filteredPayments = selectedDate
+    ? allPayments.filter(p =>
+      new Date(p.created_at).toISOString().split('T')[0] === selectedDate
+    )
+    : allPayments;
+
+  const revenuePayments = filteredPayments.filter(p => p.method !== 'topup');
+  const avgRevenue = revenuePayments.length > 0
+    ? adminStats.totalRevenue / revenuePayments.length
+    : 0;
+
 
   return (
     <div className="dashboard-container">
-      <aside className="sidebar">
-        <div className="sidebar-header">
+      <aside className="dashboard-sidebar">
+        <div className="dashboard-sidebar-header">
           <h2>🚌 The Mona Metro</h2>
         </div>
-        <nav className="sidebar-menu">
+        <nav className="dashboard-sidebar-menu">
           <ul>
             <li>
-              <Link to="/dashboard" className="menu-item">
+              <Link to="/dashboard" className="dashboard-menu-item">
                 <i className="fas fa-home"></i>
                 <span>Dashboard</span>
               </Link>
             </li>
             <li>
-              <Link to="/profile" className="menu-item">
+              <Link to="/profile" className="dashboard-menu-item">
                 <i className="fas fa-user"></i>
                 <span>Profile</span>
               </Link>
             </li>
             {userData?.role !== 'driver' && (
               <li>
-                <Link to="/schedule" className="menu-item">
+                <Link to="/schedule" className="dashboard-menu-item">
                   <i className="fas fa-calendar-alt"></i>
                   <span>View Bus Schedule</span>
                 </Link>
@@ -144,7 +264,7 @@ const Dashboard = () => {
             )}
             {userData?.role === 'user' && (
               <li>
-                <Link to="/feedback" className="menu-item">
+                <Link to="/feedback" className="dashboard-menu-item">
                   <i className="fas fa-comment"></i>
                   <span>Leave Feedback</span>
                 </Link>
@@ -152,7 +272,7 @@ const Dashboard = () => {
             )}
             {userData?.role === 'admin' && (
               <li>
-                <Link to="/admin/feedback" className="menu-item">
+                <Link to="/admin/feedback" className="dashboard-menu-item">
                   <i className="fas fa-list"></i>
                   <span>View Feedback</span>
                 </Link>
@@ -160,7 +280,7 @@ const Dashboard = () => {
             )}
             {(userData?.role === 'admin' || userData?.role === 'driver') && (
               <li>
-                <Link to="/admin/communication" className="menu-item">
+                <Link to="/admin/communication" className="dashboard-menu-item">
                   <i className="fas fa-comment"></i>
                   <span>Communication Channel</span>
                 </Link>
@@ -168,16 +288,17 @@ const Dashboard = () => {
             )}
           </ul>
         </nav>
-        <div className="sidebar-footer">
-          <button onClick={handleLogout} className="logout-btn">
+        <div className="dashboard-sidebar-footer">
+          <button onClick={handleLogout} className="dashboard-logout-btn">
             <i className="fas fa-sign-out-alt"></i>
             Logout
           </button>
         </div>
       </aside>
 
-      <main className="main-content">
-        <header className="content-header">
+
+      <main className="dashboard-main-content">
+        <header className="dashboard-content-header">
           <div className="header-left">
             <h1>Welcome back, {userData?.firstname || 'User'}</h1>
             <p>Here's your daily overview</p>
@@ -191,58 +312,99 @@ const Dashboard = () => {
         </header>
 
         <div className="dashboard-cards">
-          {/* User‑only cards */}
-          {userData?.role === 'user' && (
+          {(userData?.role === 'admin' || userData?.role === 'user') && (
             <>
+              {/* Upcoming Trips */}
               <div className="card">
                 <div className="card-header">
                   <h3>Upcoming Trips</h3>
                   <i className="fas fa-route"></i>
                 </div>
                 <div className="card-content">
-                  {upcomingTrips.length > 0 ? (
-                    upcomingTrips.map(trip => (
-                      <div
-                        key={trip.bookingId}
-                        className={`trip-item ${trip.simulated ? 'simulated-booking' : ''}`}
-                      >
-                        <div className="trip-info">
-                          <div className="trip-route">
-                            {trip.startLocation} → {trip.endLocation}
-                            {trip.simulated && (
-                              <span className="simulation-badge">Simulation</span>
-                            )}
-                          </div>
-                          <div className="trip-meta">
-                            <div className="trip-time">
-                              <i className="fas fa-clock"></i>
-                              {new Date(trip.departureTime).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </div>
-                            <div className={`trip-status ${trip.status.toLowerCase()}`}>
-                              <i className="fas fa-circle"></i>
-                              {trip.status}
-                            </div>
-                          </div>
-                        </div>
-                        {trip.simulated && (
-                          <div className="simulated-warning">
-                            <i className="fas fa-flask"></i>
-                            Demo transaction
-                          </div>
-                        )}
+                  {userData.role === 'admin' ? (
+                    upcomingTrips.length > 0 ? (
+                      <div className="activities-table-container">
+                        <table className="bookings-table">
+                          <thead>
+                            <tr>
+                              <th>Booking ID</th>
+                              <th>User</th>
+                              <th className="route-col">Route</th>
+                              <th>Seats</th>
+                              <th>Status</th>
+                              <th>Departure</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {upcomingTrips.map(b => (
+                              <tr key={b.booking_id}>
+                                <td>{b.booking_id}</td>
+                                <td>
+                                  {b.user_name}<br />
+                                  <small>{b.email}</small>
+                                </td>
+                                <td className="route-col">{`${b.start_location} → ${b.end_location}`}</td>
+                                <td>{b.seats}</td>
+                                <td>{b.status}</td>
+                                <td>{new Date(b.departure_time).toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
-                    ))
+                    ) : (
+                      <p>No upcoming trips.</p>
+                    )
                   ) : (
-                    <p className="no-trips-message">
-                      <i className="fas fa-calendar-times"></i>
-                      No upcoming trips booked
-                    </p>
+                    upcomingTrips.length > 0
+                      ? <p><strong>{upcomingTrips.length}</strong> upcoming trip{upcomingTrips.length > 1 && 's'}</p>
+                      : <p>No upcoming trips.</p>
                   )}
                 </div>
               </div>
+
+              {userData?.role === 'admin' && (
+                <>
+                  <div className="card">
+                    <div className="card-header">
+                      <h3>Filter by Date</h3>
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="date-picker"
+                      />
+                    </div>
+                    {selectedDate && (
+                      <p style={{ marginTop: '10px' }}>
+                        📆 Filtered for: <strong>{new Date(selectedDate).toDateString()}</strong>
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="card">
+                    <div className="card-header">
+                      <h3>Total Revenue</h3>
+                      <i className="fas fa-dollar-sign"></i>
+                    </div>
+                    <div className="card-content">
+                      <p><strong>💵 Total Revenue Collected: ${adminStats.totalRevenue.toFixed(2)}</strong></p>
+                      <p><strong>---{filteredPayments.length} transactions included in this total.</strong></p>
+                      <p><strong>📊 Average booking payment: ${avgRevenue.toFixed(2)}</strong></p>
+                    </div>
+                  </div>
+
+                  <div className="card">
+                    <div className="card-header">
+                      <h3>Total Top‑Ups</h3>
+                      <i className="fas fa-wallet"></i>
+                    </div>
+                    <div className="card-content">
+                      <p><strong>📥 Total Wallet Top-Ups: ${adminStats.totalTopups.toFixed(2)}</strong></p>
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div className="card">
                 <div className="card-header">
@@ -251,19 +413,34 @@ const Dashboard = () => {
                 </div>
                 <div className="card-content">
                   {recentBookings.length > 0 ? (
-                    recentBookings.map(booking => (
-                      <div key={booking.bookingId} className="booking-item">
-                        <div className="booking-date">
-                          {new Date(booking.bookingDate).toLocaleDateString()}
-                        </div>
-                        <div className="booking-details">
-                          {booking.routeName} - {booking.seats} seats
-                        </div>
-                        <div className="booking-status">
-                          {booking.status}
-                        </div>
-                      </div>
-                    ))
+                    <table className="recent-bookings-table">
+                      <thead>
+                        <tr>
+                          <th>Booking Date</th>
+                          <th>Route</th>
+                          <th>Seats</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {recentBookings.map(booking => (
+                          <tr key={booking.booking_id}>
+                            <td>
+                              {booking.booking_date
+                                ? new Date(booking.booking_date).toLocaleDateString()
+                                : 'N/A'}
+                            </td>
+                            <td>
+                              {booking.start_location && booking.end_location
+                                ? `${booking.start_location} → ${booking.end_location}`
+                                : 'N/A'}
+                            </td>
+                            <td>{booking.seats || 'N/A'}</td>
+                            <td>{booking.status || 'N/A'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   ) : (
                     <p>No recent bookings</p>
                   )}
@@ -272,50 +449,74 @@ const Dashboard = () => {
             </>
           )}
 
-          {/* Driver & Admin: Driver Updates */}
-          {(userData?.role === 'driver' || userData?.role === 'admin') && (
-            <div className="driver-updates card">
+          {lastBookingInfo && (
+            <div className="card">
               <div className="card-header">
-                <h3>Driver Messages</h3>
-                <i className="fas fa-bullhorn"></i>
+                <h3>Last Booking</h3>
+                <i className="fas fa-history"></i>
+              </div>
+              <div className="card-content">
+                <p>
+                  Last booking: {lastBookingInfo.tripName}, {lastBookingInfo.daysAgo} days ago
+                </p>
+              </div>
+            </div>
+          )}
+
+          {(userData?.role === 'admin' || userData?.role === 'driver') && (
+            <div className="card">
+              <div className="card-header">
+                <h3>Driver Updates</h3>
+                <i className="fas fa-broadcast-tower"></i>
               </div>
               <div className="card-content">
                 {driverUpdates.length > 0 ? (
-                  driverUpdates.map(update => (
-                    <div key={update.update_id} className="update-item">
-                      <p>
-                        <strong>{update.driver_name || 'Driver'}:</strong>{' '}
-                        {update.message}
-                      </p>
-                      <span className="timestamp">
-                        {new Date(update.created_at).toLocaleString()}
-                      </span>
-                    </div>
-                  ))
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Update Time</th>
+                        <th>Origin</th>
+                        <th>Message</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {driverUpdates.map((update, index) => (
+                        <tr key={index}>
+                          <td>
+                            {new Date(update.created_at).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </td>
+                          <td>{update.bus_id || 'N/A'}</td>
+                          <td>{update.message || 'No message'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 ) : (
-                  <p>No updates from drivers</p>
+                  <p>No driver updates available.</p>
                 )}
               </div>
             </div>
           )}
 
-          {/* Everyone: Active Buses */}
-          <div className="recent-activities">
+          <div className="card">
             <div className="card-header">
               <h3>
-                Active Buses
+                Bus schedule/Active Buses
                 {userData?.role === 'admin' && busCount !== null && (
                   <span className="count-badge">({busCount})</span>
                 )}
               </h3>
               <i className="fas fa-bus"></i>
             </div>
-            <div className="activities-table-container">
+            <div className="card-content">
               {activeBuses.length > 0 ? (
                 <table>
                   <thead>
                     <tr>
-                      <th>Bus Number</th>
+                      <th>Bus Origin/Destination</th>
                       <th>Route</th>
                       <th>Next Departure</th>
                       {userData?.role === 'admin' && <th>Status</th>}
@@ -349,6 +550,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+
       </main>
     </div>
   );

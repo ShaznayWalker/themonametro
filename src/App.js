@@ -7,16 +7,18 @@ import Profile from "./component/profile";
 import Schedule from "./component/schedule";
 import Feedback from "./component/feedback";
 import Communication from "./component/communication";
-import Payment from "./component/payment"; // Added Payment import
+import Payment from "./component/payment"; 
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const user = JSON.parse(localStorage.getItem('userData'));
   const token = localStorage.getItem('userToken');
 
   if (!token) return <Navigate to="/signin" replace />;
-  if (requiredRole && user?.role !== requiredRole) {
+  
+  if (requiredRole && (!Array.isArray(requiredRole) ? requiredRole !== user?.role : !requiredRole.includes(user?.role))) {
     return <Navigate to="/dashboard" replace />;
   }
+
   return children;
 };
 
@@ -50,7 +52,7 @@ function App() {
 
         {/* Communication route */}
         <Route path="/admin/communication" element={
-          <ProtectedRoute requiredRole="admin">
+          <ProtectedRoute requiredRole={['admin', 'driver']}>
             <Communication />
           </ProtectedRoute>
         } />

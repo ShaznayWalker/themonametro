@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaStar, FaSmile, FaComment, FaHandsHelping, FaBus, FaMusic, FaShieldAlt, FaUserAlt, FaClock } from "react-icons/fa";
+import { FaStar, FaSmile, FaComment, FaHandsHelping, FaBus, FaMusic, FaShieldAlt, FaUserAlt, FaClock, FaEnvelope, } from "react-icons/fa";
+
 import axios from "axios";
 import "../style/feedback.css";
+import '../style/reset.css';
 
 export default function Feedback() {
     const navigate = useNavigate();
@@ -39,23 +41,23 @@ export default function Feedback() {
             axios.get("http://localhost:5000/api/feedback", {
                 headers: { Authorization: `Bearer ${token}` }
             })
-            .then(res => {
-                setFeedbackList(res.data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
+                .then(res => {
+                    setFeedbackList(res.data);
+                    setLoading(false);
+                })
+                .catch(err => {
+                    console.error(err);
+                    setLoading(false);
+                });
         } else {
             setLoading(false);
         }
     }, [isAdmin, token]);
 
     const handleSuggestionToggle = (suggestion) => {
-        setSelectedSuggestions(prev => 
-            prev.includes(suggestion) 
-                ? prev.filter(s => s !== suggestion) 
+        setSelectedSuggestions(prev =>
+            prev.includes(suggestion)
+                ? prev.filter(s => s !== suggestion)
                 : [...prev, suggestion]
         );
     };
@@ -63,7 +65,15 @@ export default function Feedback() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
-        
+        setSuccess("");  // Add this line to clear previous messages
+
+        // Add this validation block
+        if (rating < 1 || rating > 5) {
+            setError("⚠️ Please select a rating between 1 and 5 stars");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
         const fullMessage = selectedSuggestions.length > 0
             ? `${message} | Quick Feedback: ${selectedSuggestions.join(', ')}`
             : message;
@@ -74,19 +84,26 @@ export default function Feedback() {
                 { message: fullMessage, rating },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
+
+            // Keep these reset lines
             setMessage("");
             setRating(0);
             setSelectedSuggestions([]);
+
+            // Add these notification lines
             setSuccess("Thank you for your feedback! We'll use it to improve 🚀");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => setSuccess(""), 5000);
+
         } catch (err) {
             setError(err.response?.data?.error || "Oops! Something went wrong. Please try again.");
+            window.scrollTo({ top: 0, behavior: 'smooth' });  // Add this
         }
     };
 
     if (loading) {
         return (
-            <div className="dashboard-loading">
+            <div className="feedback-loading">
                 <div className="loading-spinner"></div>
                 <p>Loading...</p>
             </div>
@@ -94,35 +111,35 @@ export default function Feedback() {
     }
 
     return (
-        <div className="dashboard-container">
-            <aside className="sidebar">
-                <div className="sidebar-header">
+        <div className="feedback-container">
+            <aside className="feedback-sidebar">
+                <div className="feedback-sidebar-header">
                     <h2>🚌 The Mona Metro</h2>
                 </div>
 
-                <nav className="sidebar-menu">
+                <nav className="feedback-sidebar-menu">
                     <ul>
                         <li>
-                            <Link to="/dashboard" className="menu-item">
+                            <Link to="/dashboard" className="feedback-menu-item">
                                 <i className="fas fa-home"></i>
                                 <span>Dashboard</span>
                             </Link>
                         </li>
                         <li>
-                            <Link to="/profile" className="menu-item">
+                            <Link to="/profile" className="feedback-menu-item">
                                 <i className="fas fa-user"></i>
                                 <span>Profile</span>
                             </Link>
                         </li>
                         <li>
-                            <Link to="/schedule" className="menu-item">
+                            <Link to="/schedule" className="feedback-menu-item">
                                 <i className="fas fa-calendar-alt"></i>
-                                <span>Bus Schedule</span>
+                                <span>View Bus Schedule</span>
                             </Link>
                         </li>
                         {!isAdmin && (
                             <li>
-                                <Link to="/feedback" className="menu-item active">
+                                <Link to="/feedback" className="feedback-menu-item active">
                                     <i className="fas fa-comment"></i>
                                     <span>Feedback</span>
                                 </Link>
@@ -130,7 +147,7 @@ export default function Feedback() {
                         )}
                         {isAdmin && (
                             <li>
-                                <Link to="/admin/feedback" className="menu-item active">
+                                <Link to="/admin/feedback" className="feedback-menu-item active">
                                     <i className="fas fa-list"></i>
                                     <span>View Feedback</span>
                                 </Link>
@@ -139,51 +156,91 @@ export default function Feedback() {
                     </ul>
                 </nav>
 
-                <div className="sidebar-footer">
-                    <button onClick={handleLogout} className="logout-btn">
+                <div className="feedback-sidebar-footer">
+                    <button onClick={handleLogout} className="feedback-logout-btn">
                         <i className="fas fa-sign-out-alt"></i>
                         Logout
                     </button>
                 </div>
             </aside>
 
-            <main className="main-content">
+            <main className="feedback-main-content">
                 <header className="content-header">
                     <div className="header-left">
                         <h1>{isAdmin ? "📝 Customer Feedback" : "💬 Share Your Feedback"}</h1>
                         <p>{isAdmin ? "All user feedback submissions" : "We value your experience"}</p>
                     </div>
                 </header>
-
+                <div className="notification-container">
+                    {success && (
+                        <div className="success-message">
+                            ✅ {success}
+                            <button
+                                onClick={() => setSuccess("")}
+                                className="close-notification"
+                            >
+                                ×
+                            </button>
+                        </div>
+                    )}
+                    {error && (
+                        <div className="error-message">
+                            ⚠️ {error}
+                            <button
+                                onClick={() => setError("")}
+                                className="close-notification"
+                            >
+                                ×
+                            </button>
+                        </div>
+                    )}
+                </div>
                 <div className="feedback-content">
                     {isAdmin ? (
                         feedbackList.length > 0 ? (
                             feedbackList.map((feedback) => (
-                                <div key={feedback.feedback_id} className="feedback-card">
-                                    <div className="info-box">
-                                        <span className="info-label">👤 Name:</span>
-                                        <span className="info-value">{feedback.name}</span>
-                                    </div>
-                                    <div className="info-box">
-                                        <span className="info-label">📧 Email:</span>
-                                        <span className="info-value">{feedback.email}</span>
-                                    </div>
-                                    <div className="info-box">
-                                        <span className="info-label">⭐ Rating:</span>
-                                        <div className="stars">
-                                            {[...Array(5)].map((_, i) => (
-                                                <FaStar
-                                                    key={i}
-                                                    color={i < feedback.rating ? "#FFD166" : "#e0e0e0"}
-                                                    size={20}
-                                                />
-                                            ))}
+                                <div
+                                    key={feedback.feedback_id}
+                                    className="feedback-card"
+                                    data-rating={feedback.rating}
+                                >
+                                    {/* Header: Name + Email */}
+                                    <div className="feedback-header">
+                                        <div className="feedback-user">
+                                            <FaUserAlt className="feedback-icon" />
+                                            <span className="feedback-name">
+                                                {feedback.firstname} {feedback.lastname}
+                                            </span>
+                                        </div>
+                                        <div className="feedback-email">
+                                            <FaEnvelope className="feedback-icon" />
+                                            <a
+                                                href={`mailto:${feedback.email}`}
+                                                className="feedback-email-link"
+                                            >
+                                                {feedback.email}
+                                            </a>
                                         </div>
                                     </div>
-                                    <div className="info-box">
-                                        <span className="info-label">💭 Message:</span>
+
+                                    {/* Star Rating */}
+                                    <div className="feedback-rating">
+                                        {[...Array(5)].map((_, i) => (
+                                            <FaStar
+                                                key={i}
+                                                color={i < feedback.rating ? "#FFD166" : "#e0e0e0"}
+                                                size={18}
+                                            />
+                                        ))}
+                                    </div>
+
+                                    {/* Message Body */}
+                                    <div className="feedback-body">
+                                        <FaComment className="feedback-icon" />
                                         <p className="feedback-message">{feedback.message}</p>
                                     </div>
+
+                                    {/* Timestamp */}
                                     <div className="feedback-meta">
                                         🕒 {new Date(feedback.created_at).toLocaleString()}
                                     </div>
@@ -245,9 +302,8 @@ export default function Feedback() {
                                                 <button
                                                     type="button"
                                                     key={text}
-                                                    className={`suggestion-btn ${
-                                                        selectedSuggestions.includes(text) ? 'selected' : ''
-                                                    }`}
+                                                    className={`suggestion-btn ${selectedSuggestions.includes(text) ? 'selected' : ''
+                                                        }`}
                                                     onClick={() => handleSuggestionToggle(text)}
                                                 >
                                                     {icon} {text}

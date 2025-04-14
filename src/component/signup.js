@@ -1,8 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import "../style/Signup.css";
-import { Link } from "react-router-dom";
-
+import '../style/reset.css';
 const Signup = () => {
   const [formData, setFormData] = useState({
     firstname: "",

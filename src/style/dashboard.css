@@ -1,23 +1,6 @@
 /* Base Styles */
 @import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
 
-:root {
-  --primary-blue: #104971;
-  --accent-yellow: #FFCC00;
-  --dark-text: #2c3e50;
-  --light-text: #ffffff;
-  --transparent-white: rgba(255, 255, 255, 0.85);
-  --shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-  --scrollbar-thumb: #104971;
-  --scrollbar-track: #f1f1f1;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
 
 body {
   min-height: 100vh;
@@ -35,8 +18,8 @@ body {
   backdrop-filter: blur(5px);
 }
 
-/* Sidebar */
-.sidebar {
+
+.dashboard-sidebar {
   width: 280px;
   background: var(--primary-blue);
   padding: 25px;
@@ -48,34 +31,37 @@ body {
   overflow-y: auto;
 }
 
-/* Sidebar Scrollbar */
-.sidebar::-webkit-scrollbar {
+.dashboard-sidebar::-webkit-scrollbar {
   width: 8px;
 }
-.sidebar::-webkit-scrollbar-track {
+.dashboard-sidebar::-webkit-scrollbar-track {
   background: var(--scrollbar-track);
 }
-.sidebar::-webkit-scrollbar-thumb {
+.dashboard-sidebar::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
-.sidebar-header {
-  padding-bottom: 25px;
-  border-bottom: 2px solid var(--accent-yellow);
+.dashboard-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 30px;
 }
-.sidebar-header h2 {
+
+.dashboard-sidebar-header h2 {
   color: var(--light-text);
   font-size: 24px;
   margin-bottom: 25px;
 }
 
-/* Menu Items */
-.sidebar-menu ul {
+.dashboard-sidebar-menu ul {
   list-style: none;
   margin-top: 30px;
 }
-.menu-item {
+.dashboard-menu-item {
   display: flex;
   align-items: center;
   padding: 15px;
@@ -85,67 +71,75 @@ body {
   margin: 8px 0;
   transition: all 0.3s ease;
 }
-.menu-item:hover {
+.dashboard-menu-item:hover {
   background: var(--accent-yellow);
   color: var(--primary-blue);
   text-shadow: none;
 }
-.menu-item i {
+.dashboard-menu-item i {
   width: 30px;
   font-size: 18px;
 }
 
-/* Logout Button */
-.logout-btn {
+.dashboard-menu-item.active {
   background: var(--accent-yellow);
   color: var(--primary-blue);
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+
+.dashboard-sidebar-footer {
   margin-top: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: all 0.3s ease;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.2);
 }
 
-.sidebar-footer .logout-btn:hover {
-  background: #68251d;  /* red */
+.dashboard-logout-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #ef4444; 
   color: white;
-  backdrop-filter: blur;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+  text-align: center;
+}
+
+.dashboard-logout-btn:hover {
+  background-color: #dc2626;
 }
 
 
 
-.main-content {
+.dashboard-main-content {
   flex: 1;
-  padding: 40px;
+  padding: 30px;
   background: var(--transparent-white);
-  margin: 20px 20px 20px 300px;
+  margin: 20px;  
   border-radius: 12px;
   box-shadow: var(--shadow);
   color: var(--dark-text);
   text-shadow: none;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
+  margin-left: 280px;
 }
 
-/* Main Content Scrollbar */
-.main-content::-webkit-scrollbar {
+.dasboard-main-content::-webkit-scrollbar {
   width: 10px;
 }
-.main-content::-webkit-scrollbar-track {
+.dashboard-main-content::-webkit-scrollbar-track {
   background: var(--scrollbar-track);
   border-radius: 0 12px 12px 0;
 }
-.main-content::-webkit-scrollbar-thumb {
+.dashboard-main-content::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb);
   border-radius: 4px;
 }
-.main-content::-webkit-scrollbar-thumb:hover {
+.dashboard-main-content::-webkit-scrollbar-thumb:hover {
   background-color: #0d3a5a;
 }
 
@@ -181,7 +175,7 @@ body {
   font-weight: bold;
 }
 
-/* Cards Grid */
+
 .dashboard-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -189,7 +183,7 @@ body {
   margin-bottom: 30px;
   align-items: start;
 }
-/* Simulated booking styles */
+
 .simulated-booking {
   position: relative;
   background-color: #f8f9fa;
@@ -217,7 +211,6 @@ body {
   gap: 6px;
 }
 
-/* Improved trip item layout */
 .trip-item {
   display: flex;
   justify-content: space-between;
@@ -256,10 +249,11 @@ body {
   color: #6c757d;
   padding: 20px;
 }
-/* Standard Card */
+
 .card {
   background: var(--transparent-white);
   padding: 25px;
+  margin: 20px 0;
   border-radius: 12px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(5px);
@@ -294,7 +288,7 @@ body {
   color: var(--primary-blue);
 }
 
-/* Driver Updates Card */
+
 .driver-updates {
   background: var(--transparent-white);
   padding: 25px;
@@ -332,7 +326,7 @@ body {
   padding-right: 10px;
 }
 
-/* Recent Activities Table */
+
 .recent-activities {
   min-height: auto;
   align-self: flex-start;
@@ -353,7 +347,7 @@ body {
   color: #777;
 }
 
-/* Recent Activities Table */
+
 .recent-activities {
   background: var(--transparent-white);
   padding: 25px;
@@ -399,7 +393,6 @@ td {
   color: white;
 }
 
-/* Loading Spinner */
 .dashboard-loading {
   display: flex;
   flex-direction: column;
@@ -423,30 +416,46 @@ td {
   100% { transform: rotate(360deg); }
 }
 
-/* Responsive */
+
 @media (max-width: 992px) {
   .dashboard-container {
     flex-direction: column;
   }
-  .sidebar {
+  .dashboard-sidebar {
     width: 100%;
     position: relative;
     height: auto;
     margin-bottom: 20px;
   }
-  .main-content {
-    margin: 10px;
-    padding: 20px;
+  .dashboard-main-content {
+    margin: 20px;
+    padding: 30px;
   }
-  .content-header {
+  .dashboard-content-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
   }
-  .content-header h1 {
+  .dashboard-content-header h1 {
     font-size: 24px;
   }
 }
+
+.activities-table-container {
+  overflow-x: auto;
+}
+
+th.route-col,
+td.route-col {
+  min-width: 200px;
+}
+
+td, th {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 @media (max-width: 768px) {
   .dashboard-cards {
     grid-template-columns: 1fr;
