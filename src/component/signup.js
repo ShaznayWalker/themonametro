@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../style/Signup.css";
 import '../style/reset.css';
+
 const Signup = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
@@ -11,7 +13,7 @@ const Signup = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "user" // Added role field with default value
+    role: "user"
   });
 
   const [error, setError] = useState("");
@@ -22,27 +24,36 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
+    // Client-side validations
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
       return;
-    } else {
-      setError("");
+    }
+
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
+    if (!/[A-Z]/.test(formData.password)) {
+      setError("Password must contain at least one uppercase letter");
+      return;
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/signup", {
-        firstname: formData.firstname,
-        lastname: formData.lastname,
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword,
-        role: formData.role // Added role to the submission
+      const response = await axios.post("/api/signup", formData);
+
+      // Redirect to login with success state
+      navigate('/signin', {
+        state: { 
+          successMessage: `Successfully registered as ${formData.role}!`,
+          email: formData.email
+        }
       });
 
-      console.log(response.data);
-      alert(`User registered successfully as ${formData.role}!`);
+      // Reset form
       setFormData({
         firstname: "",
         lastname: "",
@@ -50,19 +61,21 @@ const Signup = () => {
         email: "",
         password: "",
         confirmPassword: "",
-        role: "user" // Reset to default
+        role: "user"
       });
+
     } catch (error) {
-      console.error(error);
-      setError(error.response?.data?.message || "Error signing up. Please try again.");
+      console.error("Registration error:", error);
+      setError(error.response?.data?.message || "Registration failed. Please try again.");
     }
   };
-  
+
   return (
     <div className="signup-container">
-      <h1> 🚌 The Mona Metro</h1>
+      <h1>🚌 The Mona Metro</h1>
       <form className="signup-form" onSubmit={handleSubmit}>
         <h2>Registration Form</h2>
+        
         <div className="form-row">
           <div className="form-group">
             <input
@@ -85,6 +98,7 @@ const Signup = () => {
             />
           </div>
         </div>
+
         <div className="form-group">
           <input
             type="text"
@@ -95,6 +109,7 @@ const Signup = () => {
             required
           />
         </div>
+
         <div className="form-group">
           <input
             type="email"
@@ -105,6 +120,7 @@ const Signup = () => {
             required
           />
         </div>
+
         <div className="form-group">
           <input
             type="password"
@@ -115,6 +131,7 @@ const Signup = () => {
             required
           />
         </div>
+
         <div className="form-group">
           <input
             type="password"
@@ -125,12 +142,11 @@ const Signup = () => {
             required
           />
         </div>
-        {/* Added role selection dropdown */}
+
         <div className="form-group">
           <label htmlFor="role">Account Type:</label>
           <select
             name="role"
-            id="role"
             value={formData.role}
             onChange={handleChange}
             className="form-control"
@@ -140,11 +156,16 @@ const Signup = () => {
             <option value="driver">Bus Driver</option>
           </select>
         </div>
-        {error && <p className="error">{error}</p>}
-        <button type="submit">Sign Up</button>
+
+        {error && <p className="error-message">⚠️ {error}</p>}
+
+        <button type="submit" className="submit-button">
+          Create Account
+        </button>
       </form>
-      <div className="signin-link">
-        <p>Already have an account? <Link to="/signin">Sign in</Link></p>
+
+      <div className="auth-redirect">
+        <p>Already have an account? <Link to="/signin">Sign In</Link></p>
       </div>
     </div>
   );

@@ -6,7 +6,24 @@ const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+const corsOptions = {
+  origin: [
+    'http://localhost:3000', // Original frontend
+    'http://localhost:3001'  // New frontend port
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
+
+// Then add this security header middleware RIGHT AFTER:
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Expose-Headers', 'Authorization');
+  next();
+});
 
 // Database configuration
 const pool = new Pool({
@@ -133,23 +150,81 @@ async function initializeDatabase() {
   }
 }
 
+const validateSignup = (req, res, next) => {
+  const { email, password } = req.body;
+  
+  // Email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
+
+  // Password complexity
+  const passwordRegex = /^(?=.*[A-Z]).{8,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({ 
+      error: 'Password must be 8+ characters with at least one uppercase letter'
+    });
+  }
+
+  next();
+};
 // User registration
 app.post("/api/signup", async (req, res) => {
   const { firstname, lastname, username, email, password, role } = req.body;
 
+  // Validate role
+  const validRoles = ['user', 'admin', 'driver'];
+  if (!validRoles.includes(role)) {
+    return res.status(400).json({ error: 'Invalid user role' });
+  }
+
+  // Validate password complexity
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters' });
+  }
+
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Check if user already exists
+    const existingUser = await pool.query(
+      'SELECT * FROM users WHERE email = $1 OR username = $2',
+      [email.toLowerCase(), username]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(409).json({ error: 'Email or username already exists' });
+    }
+
+    // Insert new user
     const result = await pool.query(
-      `INSERT INTO users (firstname, lastname, username, email, password, role)
+      `INSERT INTO users 
+        (firstname, lastname, username, email, password, role)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id, firstname, lastname, username, email, role`,
-      [firstname, lastname, username, email.toLowerCase(), hashedPassword, role || 'user']
+      [
+        firstname,
+        lastname,
+        username,
+        email.toLowerCase(),
+        hashedPassword,
+        role || 'user'
+      ]
     );
     
-    res.status(201).json(result.rows[0]);
+    res.status(201).json({
+      success: true,
+      user: result.rows[0],
+      message: `User registered successfully as ${role}`
+    });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error signing up user' });
+    console.error('Registration error:', error);
+    res.status(500).json({ 
+      error: 'Registration failed',
+      details: error.message
+    });
   }
 });
 

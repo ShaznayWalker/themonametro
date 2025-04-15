@@ -19,10 +19,14 @@ const Signin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/api/signin", {
-        email: formData.email.toLowerCase(),
-        password: formData.password,
-      });
+      const response = await axios.post(
+        "/api/signin", 
+        {
+          email: formData.email.toLowerCase(),
+          password: formData.password
+        },
+        { withCredentials: true } 
+      );
       
 
       // Store all data with lowercase email
