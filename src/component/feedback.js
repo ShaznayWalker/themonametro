@@ -65,9 +65,9 @@ export default function Feedback() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
-        setSuccess("");  // Add this line to clear previous messages
+        setSuccess(""); 
 
-        // Add this validation block
+        
         if (rating < 1 || rating > 5) {
             setError("⚠️ Please select a rating between 1 and 5 stars");
             window.scrollTo({ top: 0, behavior: 'smooth' });
