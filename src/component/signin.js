@@ -29,7 +29,7 @@ const Signin = () => {
       );
       
 
-      // Store all data with lowercase email
+      
       localStorage.setItem("userToken", response.data.token);
       localStorage.setItem("userEmail", response.data.user.email.toLowerCase());
       localStorage.setItem("userData", JSON.stringify(response.data.user));

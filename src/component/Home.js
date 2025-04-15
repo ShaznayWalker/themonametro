@@ -8,7 +8,6 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      {/* Fixed Header */}
       <header className="main-header">
         <div className="header-content">
           <Link to="/" className="logo-link">

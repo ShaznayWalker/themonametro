@@ -14,7 +14,6 @@
   overflow: hidden; 
 }
 
-/* ======= Updated Sidebar Styles ======= */
 .payment-sidebar {
   width: 250px;
   background-color: var(--primary-blue);
@@ -95,7 +94,7 @@
   background-color: #dc2626;
 }
 
-/* ======= Main Content Styles with Scroll ======= */
+
 .payments-main-content {
   flex-grow: 1;
   padding: 30px;
@@ -104,7 +103,7 @@
   height: 100vh;
   overflow-y: auto; 
   
-  /* Custom Scrollbar */
+  
   scrollbar-width: thin;
   scrollbar-color: var(--primary-blue) #f0f0f0;
 }
@@ -237,7 +236,7 @@
   text-align: center;
 }
 
-/* ======= Mobile Responsive Styles ======= */
+
 @media (max-width: 768px) {
   .payment-sidebar {
     width: 100%;

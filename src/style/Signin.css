@@ -83,7 +83,6 @@ h1 {
   transition: all 0.3s ease;
 }
 
-/* Role Select Dropdown */
 .signup-form .form-group select {
   height: 50px;
   width: 100%;
@@ -196,7 +195,6 @@ button:hover {
   }
 }
 
-/* Custom dropdown arrow */
 .form-group.select-wrapper {
   position: relative;
 }

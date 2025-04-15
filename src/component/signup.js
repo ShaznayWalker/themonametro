@@ -26,7 +26,7 @@ const Signup = () => {
     e.preventDefault();
     setError("");
 
-    // Client-side validations
+    
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
       return;
@@ -45,7 +45,7 @@ const Signup = () => {
     try {
       const response = await axios.post("/api/signup", formData);
 
-      // Redirect to login with success state
+      
       navigate('/signin', {
         state: { 
           successMessage: `Successfully registered as ${formData.role}!`,
@@ -53,7 +53,7 @@ const Signup = () => {
         }
       });
 
-      // Reset form
+      
       setFormData({
         firstname: "",
         lastname: "",

@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -240,6 +239,17 @@ textarea {
   border-radius: var(--border-radius);
   margin: 1rem 0;
   border: 1px solid #28a745;
+}
+
+select {
+  position: relative;
+  z-index: 1000;
+}
+
+select option {
+  z-index: 1001;
+  position: relative;
+  background: white;
 }
 
 @media (max-width: 768px) {

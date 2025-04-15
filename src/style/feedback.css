@@ -452,9 +452,6 @@ textarea#message::placeholder {
   box-shadow: var(--shadow);
 }
 
-/* ──────────────────────────────────────────────
-   Enhanced Feedback Cards (View Feedback)
-────────────────────────────────────────────── */
 
 .feedback-header {
   display: flex;

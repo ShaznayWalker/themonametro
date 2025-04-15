@@ -8,8 +8,8 @@ const app = express();
 app.use(express.json());
 const corsOptions = {
   origin: [
-    'http://localhost:3000', // Original frontend
-    'http://localhost:3001'  // New frontend port
+    'http://localhost:3000', 
+    'http://localhost:3001'  
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -18,7 +18,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Then add this security header middleware RIGHT AFTER:
+
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Expose-Headers', 'Authorization');

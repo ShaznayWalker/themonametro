@@ -71,7 +71,7 @@ const Profile = () => {
         <section className="profile-card">
           <div className="pc-header">
             <div className="pc-avatar">
-              {/* swap this for <img src={userData.avatarUrl} alt="Avatar" /> if you have one */}
+              
               {userData.firstname.charAt(0)}{userData.lastname.charAt(0)}
             </div>
             <div>

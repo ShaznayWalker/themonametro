@@ -82,14 +82,14 @@ const Dashboard = () => {
 
         setDriverUpdates(updatesResponse.data);
 
-        // Allow all roles to see active buses
+        
         setActiveBuses(busesResponse.data.buses);
         setBusCount(busesResponse.data.count);
 
-        // Admin-only stats
+        
         if (parsedData.role === 'admin') {
 
-          // Fetch payments
+         
           const paymentsRes = await axios.get('/api/payments/history', {
             headers: { Authorization: `Bearer ${token}` }
           });

@@ -85,19 +85,19 @@ export default function Feedback() {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            // Keep these reset lines
+            
             setMessage("");
             setRating(0);
             setSelectedSuggestions([]);
 
-            // Add these notification lines
+            
             setSuccess("Thank you for your feedback! We'll use it to improve 🚀");
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => setSuccess(""), 5000);
 
         } catch (err) {
             setError(err.response?.data?.error || "Oops! Something went wrong. Please try again.");
-            window.scrollTo({ top: 0, behavior: 'smooth' });  // Add this
+            window.scrollTo({ top: 0, behavior: 'smooth' });  
         }
     };
 
@@ -234,13 +234,13 @@ export default function Feedback() {
                                         ))}
                                     </div>
 
-                                    {/* Message Body */}
+                                    
                                     <div className="feedback-body">
                                         <FaComment className="feedback-icon" />
                                         <p className="feedback-message">{feedback.message}</p>
                                     </div>
 
-                                    {/* Timestamp */}
+                                   
                                     <div className="feedback-meta">
                                         🕒 {new Date(feedback.created_at).toLocaleString()}
                                     </div>
